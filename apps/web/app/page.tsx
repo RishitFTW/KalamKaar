@@ -9,6 +9,14 @@ interface Rectangle {
   height: number;
 }
 
+interface Line{
+  type:"line"
+  startingX:number,
+  startingY:number,
+  endingX:number,
+  endingY:number,
+}
+
 interface Ellipse {
   type: "ellipse";
   centerX: number;
@@ -17,7 +25,7 @@ interface Ellipse {
   radiusY: number;
 }
 
-type Shape= Rectangle | Ellipse
+type Shape= Rectangle | Ellipse | Line
 
 export default function Home() {
   const canvasRef= useRef<HTMLCanvasElement>(null);
@@ -48,6 +56,12 @@ export default function Home() {
             ctx.beginPath()
             ctx.ellipse(shape.centerX, shape.centerY, shape.radiusX, shape.radiusY,0,0,2*Math.PI);
             ctx.stroke()
+          }
+          else if(shape.type=='line'){
+            ctx.beginPath(); 
+            ctx.moveTo(shape.startingX, shape.startingY); 
+            ctx.lineTo(shape.endingX, shape.endingY); 
+            ctx.stroke();        
           }
           
         }
@@ -133,7 +147,44 @@ export default function Home() {
         canvas.removeEventListener("mousemove", handleMousemove);
       }
    }
-   
+   else if(selected=="line"){
+
+    let startX=0,startY=0;
+    let clicked=false
+    const handleMousedown=(e:MouseEvent)=>{
+      clicked=true;
+      startX=e.clientX;
+      startY=e.clientY;
+    }
+    const handleMouseup=(e:MouseEvent)=>{
+      clicked=false;
+      shapesRef.current.push({
+                         type:"line",
+                        startingX:startX,
+                        startingY:startY,
+                        endingX:e.clientX,
+                        endingY:e.clientY,
+      })
+    }
+    const handleMousemove=(e:MouseEvent)=>{
+      if(clicked){
+        renderShapes()
+        ctx.beginPath(); 
+        ctx.moveTo(startX, startY); 
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.stroke();      
+      }
+    }
+    canvas.addEventListener('mousedown',handleMousedown)
+    canvas.addEventListener('mouseup',handleMouseup)
+    canvas.addEventListener('mousemove',handleMousemove)
+
+      return()=>{  
+        canvas.removeEventListener("mousedown", handleMousedown);
+        canvas.removeEventListener("mouseup", handleMouseup);
+        canvas.removeEventListener("mousemove", handleMousemove);
+      }    
+   }
 
   },[selected])
   
@@ -152,9 +203,10 @@ export default function Home() {
          <canvas ref={canvasRef} className="h-full w-full bg-[#121212] relative">
          </canvas>
          <div className="absolute top-4 left-4 flex flex-col gap-1">
-            <button onClick={()=>{setSelected("rectangle")}} className="bg-white text-black">rectangle</button>
-            <button onClick={()=>{setSelected("ellipse")}} className="bg-white text-black">circle</button>
-            <button onClick={handleClear} className="bg-red-500 text-black">Clear</button>
+            <button onClick={()=>{setSelected("rectangle")}} className="bg-white text-black p-1 rounded-md">rectangle</button>
+            <button onClick={()=>{setSelected("ellipse")}} className="bg-white text-black rounded-md">circle</button>
+            <button onClick={()=>{setSelected("line")}} className="bg-white text-black rounded-md">line</button>
+            <button onClick={handleClear} className="bg-red-500 text-black rounded-md">clear</button>
          </div>
          
     </div>
