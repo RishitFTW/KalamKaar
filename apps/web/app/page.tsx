@@ -2,43 +2,44 @@
 import { useEffect, useRef, useState } from "react";
 import { getSocket } from "../lib/socket";
 import { drawRoundedDiamond } from "../lib/DiamondShape";
+import axios from "axios";
 
 interface Rectangle {
   type: "rectangle";
-  startingX: number;
-  startingY: number;
+  x1: number;
+  y1: number;
   width: number;
   height: number;
 }
 
 interface Line{
   type:"line"
-  startingX:number,
-  startingY:number,
-  endingX:number,
-  endingY:number,
+  x1:number,
+  y1:number,
+  x2:number,
+  y2:number,
 }
 
 interface Ellipse {
   type: "ellipse";
-  centerX: number;
-  centerY: number;
-  radiusX: number;
-  radiusY: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
 }
 
 interface Icon {
   type: "icon";
-  centerX: number;
-  centerY: number;
+  x1: number;
+  y1: number;
   width: number;
   height: number;
-  radius: number; // corner roundness
+  radius: number; 
 }
 
 interface Pen{
   type:"pen";
-  lineWidth:number;
+  width:number;
   points:{x:number,y:number}[]
 }
 
@@ -52,10 +53,67 @@ export default function Home() {
 
   useEffect(()=>{
     const socket=getSocket(1)
-
+    
     socket.on("connect", () => {
       console.log("Connected to server:", socket.id);
     });
+    const f=async()=>{
+      let roomId=1
+      const res= await axios.get(`http://localhost:3001/api/v1/chat/${roomId}`)
+      shapesRef.current=res.data.data
+     const canvas= canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    const ctx= canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.strokeStyle="white";
+       
+    const renderShapes=()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(const shape of shapesRef.current){
+        if(shape.type=="rectangle"){
+          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
+        }
+        else if(shape.type=="ellipse"){
+          ctx.beginPath();
+          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
+          ctx.stroke();
+        }
+        else if(shape.type=='line'){
+          ctx.beginPath(); 
+          ctx.moveTo(shape.x1, shape.y1); 
+          ctx.lineTo(shape.x2, shape.y2); 
+          ctx.stroke();        
+        }
+        else if(shape.type=='icon'){
+          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
+        }
+        else if(shape.type=='pen'){
+          ctx.lineWidth=2;
+          ctx.lineCap='round';
+          ctx.beginPath();
+          if(shape.points.length>1){
+            const starting= shape.points[0];
+            if(starting){
+              ctx.moveTo(starting.x,starting.y);
+              for(let i=1; i<shape.points.length; i++){
+                let pt=shape.points[i];
+                if(pt){
+                  ctx.lineTo(pt.x,pt.y);
+                }
+              }
+            }
+          }
+          ctx.stroke();
+        }
+      }
+    };
+    renderShapes()      
+    }
+    f();
     socket.on('recieve',(messageData)=>{
     shapesRef.current.push(messageData)
      const canvas= canvasRef.current;
@@ -72,21 +130,21 @@ export default function Home() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
       for(const shape of shapesRef.current){
         if(shape.type=="rectangle"){
-          ctx.strokeRect(shape.startingX, shape.startingY, shape.width, shape.height);
+          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
         }
         else if(shape.type=="ellipse"){
           ctx.beginPath();
-          ctx.ellipse(shape.centerX, shape.centerY, shape.radiusX, shape.radiusY,0,0,2*Math.PI);
+          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
           ctx.stroke();
         }
         else if(shape.type=='line'){
           ctx.beginPath(); 
-          ctx.moveTo(shape.startingX, shape.startingY); 
-          ctx.lineTo(shape.endingX, shape.endingY); 
+          ctx.moveTo(shape.x1, shape.y1); 
+          ctx.lineTo(shape.x2, shape.y2); 
           ctx.stroke();        
         }
         else if(shape.type=='icon'){
-          drawRoundedDiamond(ctx, shape.centerX, shape.centerY, shape.width, shape.height, shape.radius);
+          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
         }
         else if(shape.type=='pen'){
           ctx.lineWidth=2;
@@ -129,21 +187,21 @@ export default function Home() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
       for(const shape of shapesRef.current){
         if(shape.type=="rectangle"){
-          ctx.strokeRect(shape.startingX, shape.startingY, shape.width, shape.height);
+          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
         }
         else if(shape.type=="ellipse"){
           ctx.beginPath();
-          ctx.ellipse(shape.centerX, shape.centerY, shape.radiusX, shape.radiusY,0,0,2*Math.PI);
+          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
           ctx.stroke();
         }
         else if(shape.type=='line'){
           ctx.beginPath(); 
-          ctx.moveTo(shape.startingX, shape.startingY); 
-          ctx.lineTo(shape.endingX, shape.endingY); 
+          ctx.moveTo(shape.x1, shape.y1); 
+          ctx.lineTo(shape.x2, shape.y2); 
           ctx.stroke();        
         }
         else if(shape.type=='icon'){
-          drawRoundedDiamond(ctx, shape.centerX, shape.centerY, shape.width, shape.height, shape.radius);
+          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
         }
         else if(shape.type=='pen'){
           ctx.lineWidth=2;
@@ -178,7 +236,7 @@ export default function Home() {
       };
       const handleMouseup=(e:MouseEvent)=>{
             clicked=false;
-            shapesRef.current.push({type:"rectangle",startingX:stX,startingY:stY,width:e.clientX-stX, height:e.clientY-stY});
+            shapesRef.current.push({type:"rectangle",x1:stX,y1:stY,width:e.clientX-stX, height:e.clientY-stY});
             socket.emit('msg',{type:"rectangle",startingX:stX,startingY:stY,width:e.clientX-stX, height:e.clientY-stY})
       };
       const handleMousemove=(e:MouseEvent)=>{
@@ -218,10 +276,10 @@ export default function Home() {
         let ry = Math.abs(h) / 2;      
         shapesRef.current.push({  
           type: "ellipse",
-          centerX: x,
-          centerY: y,
-          radiusX: rx,
-          radiusY: ry
+          x1: x,
+          y1: y,
+          x2: rx,
+          y2: ry
         });
         socket.emit('msg',{  
           type: "ellipse",
@@ -268,10 +326,10 @@ export default function Home() {
         clicked=false;
         shapesRef.current.push({
                           type:"line",
-                          startingX:startX,
-                          startingY:startY,
-                          endingX:e.clientX,
-                          endingY:e.clientY,
+                          x1:startX,
+                          y1:startY,
+                          x2:e.clientX,
+                          y2:e.clientY,
         });
         socket.emit('msg',{
                           type:"line",
@@ -318,8 +376,8 @@ else if (selected === "icon") {
     let cy = stY + h / 2;
     shapesRef.current.push({
       type: "icon",
-      centerX: cx,
-      centerY: cy,
+      x1: cx,
+      y1: cy,
       width: Math.abs(w),
       height: Math.abs(h),
       radius: 20
@@ -365,7 +423,7 @@ else if (selected === "icon") {
   }
   const handleMouseup=(e:MouseEvent)=>{
     clicked=false;
-    shapesRef.current.push({type:"pen",lineWidth:2,points:currPoints})
+    shapesRef.current.push({type:"pen",width:2,points:currPoints})
     socket.emit('msg',{type:"pen",lineWidth:2,points:currPoints})
     currPoints=[]
  
