@@ -1,7 +1,11 @@
 import { Server } from 'socket.io'
 import { JWT_secret } from '@repo/backend-common/config'
 import jwt from "jsonwebtoken"
-const io= new Server(4000)
+const io= new Server(4000,{
+  cors:{
+    origin:"http://localhost:3000"
+  }
+})
 
 function checkUser(token:string){
   try {
@@ -25,6 +29,7 @@ function checkUser(token:string){
 io.on("connection",(socket)=>{
   const room= socket.handshake.query.roomId;
   if(!room){
+    console.log("disconnect")
     socket.disconnect(true);
     return;
   }

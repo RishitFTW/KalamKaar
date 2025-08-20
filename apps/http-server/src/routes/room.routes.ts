@@ -1,10 +1,12 @@
 import { Router } from 'express'
+import { createRoom } from '../controllers/room.controllers'
+import { middleware } from '../middleware'
 const roomRouter:Router= Router()
 
-roomRouter.get('/')
-roomRouter.post('/createRoom')
-roomRouter.delete('/:roomId')
-roomRouter.put('/:roomId')
+
+roomRouter.post('/createRoom',middleware,createRoom)
+// roomRouter.delete('/:roomId')
+// roomRouter.put('/:roomId')
 
 
 export default roomRouter

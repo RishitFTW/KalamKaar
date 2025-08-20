@@ -2,6 +2,7 @@
 
 import { StringXor } from "next/dist/compiled/webpack/webpack";
 import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 
 interface Rectangle {
   type: "rectangle";
@@ -48,6 +49,17 @@ export default function Home() {
   const canvasRef= useRef<HTMLCanvasElement>(null);
   const shapesRef = useRef<Shape[]>([]);
   const [selected,setSelected]=useState('circle')
+
+  useEffect(()=>{
+    const socket=io("http://localhost:4000",{
+      query:{
+        roomId:1
+      }
+    })
+    socket.on("connect", () => {
+      console.log("Connected to server:", socket.id);
+    });
+  },[])
 
   useEffect(()=>{
 
@@ -318,7 +330,6 @@ else if (selected === "icon") {
   let currPoints:{x:number, y:number}[]=[]
   let linewidth=1;
   let clicked=false;
-  let startX=0,startY=0
   const handleMousedown=(e:MouseEvent)=>{
     clicked=true;
     currPoints.push({x:e.clientX,y:e.clientY})

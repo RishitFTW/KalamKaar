@@ -44,10 +44,19 @@ model member {
 }
 
 model Chat {
-  id    Int    @id @default(autoincrement())
-  message  String 
-  roomId   Int
-  userId   Int
-  room     Room  @relation(fields: [roomId], references:[id])
-  user     User  @relation(fields: [userId], references: [id])
+  id         Int    @id @default(autoincrement())
+  type       String 
+  x1         Float?
+  x2         Float?
+  y1         Float?
+  y2         Float?
+  width      Float?
+  height     Float?
+  radius     Float?
+  points     Json?
+  createdAt  DateTime @default(now())
+  roomId     Int
+  userId     Int
+  room       Room  @relation(fields: [roomId], references:[id])
+  user       User  @relation(fields: [userId], references: [id])
 } 
