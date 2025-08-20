@@ -1,8 +1,7 @@
 "use client"
-
-import { StringXor } from "next/dist/compiled/webpack/webpack";
 import { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import { getSocket } from "../lib/socket";
+import { drawRoundedDiamond } from "../lib/DiamondShape";
 
 interface Rectangle {
   type: "rectangle";
@@ -50,19 +49,72 @@ export default function Home() {
   const shapesRef = useRef<Shape[]>([]);
   const [selected,setSelected]=useState('circle')
 
+
   useEffect(()=>{
-    const socket=io("http://localhost:4000",{
-      query:{
-        roomId:1
-      }
-    })
+    const socket=getSocket(1)
+
     socket.on("connect", () => {
       console.log("Connected to server:", socket.id);
     });
+    socket.on('recieve',(messageData)=>{
+    shapesRef.current.push(messageData)
+     const canvas= canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    const ctx= canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.strokeStyle="white";
+       
+    const renderShapes=()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(const shape of shapesRef.current){
+        if(shape.type=="rectangle"){
+          ctx.strokeRect(shape.startingX, shape.startingY, shape.width, shape.height);
+        }
+        else if(shape.type=="ellipse"){
+          ctx.beginPath();
+          ctx.ellipse(shape.centerX, shape.centerY, shape.radiusX, shape.radiusY,0,0,2*Math.PI);
+          ctx.stroke();
+        }
+        else if(shape.type=='line'){
+          ctx.beginPath(); 
+          ctx.moveTo(shape.startingX, shape.startingY); 
+          ctx.lineTo(shape.endingX, shape.endingY); 
+          ctx.stroke();        
+        }
+        else if(shape.type=='icon'){
+          drawRoundedDiamond(ctx, shape.centerX, shape.centerY, shape.width, shape.height, shape.radius);
+        }
+        else if(shape.type=='pen'){
+          ctx.lineWidth=2;
+          ctx.lineCap='round';
+          ctx.beginPath();
+          if(shape.points.length>1){
+            const starting= shape.points[0];
+            if(starting){
+              ctx.moveTo(starting.x,starting.y);
+              for(let i=1; i<shape.points.length; i++){
+                let pt=shape.points[i];
+                if(pt){
+                  ctx.lineTo(pt.x,pt.y);
+                }
+              }
+            }
+          }
+          ctx.stroke();
+        }
+      }
+    };
+    renderShapes()
+    })
+    
   },[])
 
   useEffect(()=>{
-
+    const socket=getSocket(1);
     const canvas= canvasRef.current;
     if (!canvas) return;
 
@@ -72,52 +124,6 @@ export default function Home() {
     if (!ctx) return;
     
     ctx.strokeStyle="white";
-
-    // draw rounded diamond helper
-function drawRoundedDiamond(ctx:CanvasRenderingContext2D, x:number, y:number, w:number, h:number, r:number){
-  if (w < 2 * r) r = w / 2;
-  if (h < 2 * r) r = h / 2;
-
-  const hw = w / 2; // half-width
-  const hh = h / 2; // half-height
-
-  // The four vertices of the diamond
-  const top = { x: x, y: y - hh };
-  const right = { x: x + hw, y: y };
-  const bottom = { x: x, y: y + hh };
-  const left = { x: x - hw, y: y };
-
-  // Calculate the length of the diamond's edges to properly scale the radius
-  const edgeLength = Math.sqrt(hw * hw + hh * hh);
-  const radius = Math.min(r, edgeLength / 2);
-  const ratio = radius / edgeLength;
-
-  // Calculate the 8 points where the straight edges meet the corner curves
-  const p1 = { x: top.x + hw * ratio, y: top.y + hh * ratio };
-  const p2 = { x: right.x - hw * ratio, y: right.y - hh * ratio };
-  const p3 = { x: right.x - hw * ratio, y: right.y + hh * ratio };
-  const p4 = { x: bottom.x + hw * ratio, y: bottom.y - hh * ratio };
-  const p5 = { x: bottom.x - hw * ratio, y: bottom.y - hh * ratio };
-  const p6 = { x: left.x + hw * ratio, y: left.y + hh * ratio };
-  const p7 = { x: left.x + hw * ratio, y: left.y - hh * ratio };
-  const p8 = { x: top.x - hw * ratio, y: top.y + hh * ratio };
-
-  // Draw the shape by connecting the points
-  ctx.beginPath();
-  ctx.moveTo(p1.x, p1.y);
-  ctx.lineTo(p2.x, p2.y);
-  ctx.quadraticCurveTo(right.x, right.y, p3.x, p3.y);
-  ctx.lineTo(p4.x, p4.y);
-  ctx.quadraticCurveTo(bottom.x, bottom.y, p5.x, p5.y);
-  ctx.lineTo(p6.x, p6.y);
-  ctx.quadraticCurveTo(left.x, left.y, p7.x, p7.y);
-  ctx.lineTo(p8.x, p8.y);
-  ctx.quadraticCurveTo(top.x, top.y, p1.x, p1.y);
-  
-  ctx.closePath();
-  ctx.stroke();
-}
-
 
     const renderShapes=()=>{
       ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -173,6 +179,7 @@ function drawRoundedDiamond(ctx:CanvasRenderingContext2D, x:number, y:number, w:
       const handleMouseup=(e:MouseEvent)=>{
             clicked=false;
             shapesRef.current.push({type:"rectangle",startingX:stX,startingY:stY,width:e.clientX-stX, height:e.clientY-stY});
+            socket.emit('msg',{type:"rectangle",startingX:stX,startingY:stY,width:e.clientX-stX, height:e.clientY-stY})
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
@@ -216,6 +223,13 @@ function drawRoundedDiamond(ctx:CanvasRenderingContext2D, x:number, y:number, w:
           radiusX: rx,
           radiusY: ry
         });
+        socket.emit('msg',{  
+          type: "ellipse",
+          centerX: x,
+          centerY: y,
+          radiusX: rx,
+          radiusY: ry
+        })
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
@@ -259,6 +273,13 @@ function drawRoundedDiamond(ctx:CanvasRenderingContext2D, x:number, y:number, w:
                           endingX:e.clientX,
                           endingY:e.clientY,
         });
+        socket.emit('msg',{
+                          type:"line",
+                          startingX:startX,
+                          startingY:startY,
+                          endingX:e.clientX,
+                          endingY:e.clientY,
+        })
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
@@ -303,6 +324,14 @@ else if (selected === "icon") {
       height: Math.abs(h),
       radius: 20
     });
+    socket.emit('msg',{
+      type: "icon",
+      centerX: cx,
+      centerY: cy,
+      width: Math.abs(w),
+      height: Math.abs(h),
+      radius: 20
+    })
   };
 
   const handleMousemove = (e: MouseEvent) => {
@@ -337,6 +366,7 @@ else if (selected === "icon") {
   const handleMouseup=(e:MouseEvent)=>{
     clicked=false;
     shapesRef.current.push({type:"pen",lineWidth:2,points:currPoints})
+    socket.emit('msg',{type:"pen",lineWidth:2,points:currPoints})
     currPoints=[]
  
   }
