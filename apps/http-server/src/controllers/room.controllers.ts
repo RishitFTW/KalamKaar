@@ -60,9 +60,35 @@ export async function fetchAllRooms(req:Request,res:Response){
       },
     });
 
-    res.json(rooms);
+    res.json({ 
+      userId, 
+      rooms 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+
+export async function deleteRoom(req: Request, res: Response) {
+  const { roomId } = req.params;
+  console.log("yha aya")
+  try {
+    const room = await prisma.room.delete({
+      where: { id: Number(roomId) }
+    });
+
+    return res.status(200).json({
+      message: "Room deleted successfully",
+      room,
+    });
+  } catch (error: any) {
+    console.error("Error deleting room:", error);
+
+    return res.status(400).json({
+      message: "Failed to delete room",
+      error: error.message,
+    });
+  }
+}

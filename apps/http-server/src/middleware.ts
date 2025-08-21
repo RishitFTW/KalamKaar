@@ -15,6 +15,7 @@ declare global {
 }
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
+  console.log("aliye re aliye")
   const authHeader = req.headers["authorization"] || "";
   if (!authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
