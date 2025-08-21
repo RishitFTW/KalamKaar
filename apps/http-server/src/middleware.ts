@@ -2,9 +2,15 @@ import { JWT_secret } from "@repo/backend-common/config";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-declare module "express" {
-  interface Request {
-    userId?: string;
+
+interface MyJwtPayload extends JwtPayload {
+  id: number;
+}
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+    }
   }
 }
 
@@ -17,7 +23,7 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.split(" ")[1] || "";
 
   try {
-    const decoded = jwt.verify(token, JWT_secret) as JwtPayload & { id: string };
+    const decoded = jwt.verify(token, JWT_secret) as MyJwtPayload;
 
     if (!decoded?.id) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -29,3 +35,4 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 }
+

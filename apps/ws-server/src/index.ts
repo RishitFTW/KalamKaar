@@ -1,7 +1,13 @@
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import { JWT_secret } from '@repo/backend-common/config'
 import { prisma } from "@repo/db/client";
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
+interface MyJwtPayload {
+  id: number;
+}
+interface AuthenticatedSocket extends Socket {
+  userId?: number;
+}
 
 const io= new Server(4000,{
   cors:{
@@ -9,25 +15,31 @@ const io= new Server(4000,{
   }
 })
 
-function checkUser(token:string){
+
+io.use((socket: AuthenticatedSocket, next) => {
   try {
-    const decoded = jwt.verify(token, JWT_secret);
-
-    if (typeof decoded == "string") {
-      return null;
+    const authHeader = socket.handshake.headers.authorization;
+    if (!authHeader) {
+      return next(new Error("No token found"));
     }
 
-    if (!decoded || !decoded.userId) {
-      return null;
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return next(new Error("No token found"));
     }
 
-    return decoded.userId;
-  } catch(e) {
-    return null;
+    const decoded = jwt.verify(token, JWT_secret) as MyJwtPayload;
+
+    if (!decoded?.id) {
+      return next(new Error("Invalid token payload"));
+    }
+
+    socket.userId = decoded.id; 
+    next();
+  } catch (error) {
+    next(new Error("Authentication error"));
   }
-  return null;
-}
-
+});
 io.on("connection",(socket)=>{
   const room= socket.handshake.query.roomId;
   if(!room){
@@ -44,8 +56,8 @@ io.on("connection",(socket)=>{
        await prisma.chat.create({
         data:{
           type:messageData.type,
-          x1:messageData.startingX,
-          x2:messageData.startingY,
+          x1:messageData.x1,
+          y1:messageData.y1,
           width:messageData.width,
           height:messageData.height,
           roomId:1,
@@ -58,7 +70,7 @@ io.on("connection",(socket)=>{
         data:{
           type:messageData.type,
           points:messageData.points,
-          width:messageData.lineWidth,
+          width:messageData.width,
           roomId:1,
           userId:1
         }
@@ -68,8 +80,8 @@ io.on("connection",(socket)=>{
        await prisma.chat.create({
         data:{
           type:messageData.type,
-          x1:messageData.centerX,
-          y1:messageData.centerY,
+          x1:messageData.x1,
+          y1:messageData.y1,
           width:messageData.width,
           height:messageData.height,
           radius:messageData.radius,
@@ -82,10 +94,10 @@ io.on("connection",(socket)=>{
        await prisma.chat.create({
         data:{
           type:messageData.type,
-          x1:messageData.centerX,
-          y1:messageData.centerY,
-          x2:messageData.radiusX,
-          y2:messageData.radiusY,
+          x1:messageData.x1,
+          y1:messageData.y1,
+          x2:messageData.x2,
+          y2:messageData.y2,
           roomId:1,
           userId:1
         }
@@ -95,10 +107,10 @@ io.on("connection",(socket)=>{
        await prisma.chat.create({
         data:{
           type:messageData.type,
-          x1:messageData.startingX,
-          y1:messageData.startingY,
-          x2:messageData.endingX,
-          y2:messageData.endingY,
+          x1:messageData.x1,
+          y1:messageData.y1,
+          x2:messageData.x2,
+          y2:messageData.y2,
           roomId:1,
           userId:1
         }
