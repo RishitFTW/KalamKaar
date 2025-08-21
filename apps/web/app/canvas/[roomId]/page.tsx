@@ -4,7 +4,7 @@ import { getSocket } from "../../../lib/socket";
 import { drawRoundedDiamond } from "../../../lib/DiamondShape"
 
 import axios from "axios";
-import { useRouter } from "next/router";
+
 import { useParams } from "next/navigation";
 
 interface Rectangle {
@@ -64,12 +64,13 @@ export default function Canvas() {
     });
     const f=async()=>{
       let roomId=1
+      const token= localStorage.getItem('authToken')
       const res= await axios.get(`http://localhost:3001/api/v1/chat/${roomId}`,{
         headers:{
-            Authorization:`Bearer ${124}`
+            Authorization:`Bearer ${token}`
         }
       })
-      shapesRef.current=res.data.data
+     shapesRef.current=res.data.data
      const canvas= canvasRef.current;
     if (!canvas) return;
 
