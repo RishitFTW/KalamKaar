@@ -33,7 +33,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    if (res.data.member) router.push(`/canvas/${res.data.roomId}`);
+    if (res.data.member) router.push(`/canvas/${name}`);
   }
 };
 
