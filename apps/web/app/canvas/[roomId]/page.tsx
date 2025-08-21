@@ -63,7 +63,6 @@ export default function Canvas() {
       console.log("Connected to server:", socket.id);
     });
     const f=async()=>{
-      let roomId=1
       const token= localStorage.getItem('authToken')
       const res= await axios.get(`http://localhost:3001/api/v1/chat/${roomId}`,{
         headers:{

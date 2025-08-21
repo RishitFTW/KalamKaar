@@ -5,7 +5,8 @@ import Add from '../app/icons/Add'
 interface ButtonProps{
     variant: "primary" | "secondary",
     text: String,
-    icon:ReactElement
+    icon:ReactElement,
+    onClick:()=>void
 }
 
 const variantClasses={
@@ -13,10 +14,12 @@ const variantClasses={
    "secondary":" p-4 px-5 "
 }
 
-function Button({variant,text,icon}:ButtonProps) {
+function Button({variant,text,icon,onClick}:ButtonProps) {
   return (
     <div>
-       <button className={`${variantClasses[variant]} font-bold text-md bg-gray-800 text-white hover:bg-gray-700 flex rounded-md`}>{icon}<span className='pl-1'>{text}</span></button>
+       <button onClick={onClick}
+       className={`${variantClasses[variant]} font-bold text-md bg-gray-800 text-white hover:bg-gray-700 flex rounded-md`}>
+                        {icon}<span className='pl-1'>{text}</span></button>
     </div>
   )
 }

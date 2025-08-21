@@ -3,6 +3,7 @@ import { CreateRoomSchema } from "@repo/common/types";
 import { prisma } from "@repo/db/client";
 
 export async function createRoom(req:Request,res:Response){
+  console.log("hogya confirm")
     const parsedData = CreateRoomSchema.safeParse(req.body);
     if (!parsedData.success) {
         res.json({
@@ -30,3 +31,38 @@ export async function createRoom(req:Request,res:Response){
         })
     }   
 }
+
+export async function fetchAllRooms(req:Request,res:Response){
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    // Find rooms where user is admin or member
+    const rooms = await prisma.room.findMany({
+      where: {
+        OR: [
+          { adminId: userId }, // User is the admin
+          { members: { some: { userId: userId } } }, // User is a member
+        ],
+      },
+      include: {
+        admin: { select: { id: true, name: true, email: true } },
+        members: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+        chats: {
+          select: { id: true, type: true, createdAt: true },
+        },
+      },
+    });
+
+    res.json(rooms);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};

@@ -17,7 +17,7 @@ function Signup() {
         const data= res.data;
         console.log("hogya")
         localStorage.setItem('authToken',data.token) 
-        router.push('/canvas/1')
+        router.push('/dashboard')
 
     }
   return (

@@ -40,7 +40,7 @@ io.use((socket: AuthenticatedSocket, next) => {
     next(new Error("Authentication error"));
   }
 });
-io.on("connection",(socket)=>{
+io.on("connection",(socket: AuthenticatedSocket)=>{
   const room= socket.handshake.query.roomId;
   if(!room){
     console.log("disconnect")
@@ -52,6 +52,11 @@ io.on("connection",(socket)=>{
   console.log(`user with ${socket.id} has joined room: ${room}`)
 
   socket.on('msg',async(messageData)=>{
+     if (!socket.userId) {
+       console.error("Authentication error: User ID not found on socket.");
+      return; 
+    }
+
     if(messageData.type=='rectangle'){
        await prisma.chat.create({
         data:{
@@ -60,8 +65,8 @@ io.on("connection",(socket)=>{
           y1:messageData.y1,
           width:messageData.width,
           height:messageData.height,
-          roomId:1,
-          userId:1
+          roomId:Number(room),
+          userId:socket.userId
         }
        })
     }
@@ -71,8 +76,8 @@ io.on("connection",(socket)=>{
           type:messageData.type,
           points:messageData.points,
           width:messageData.width,
-          roomId:1,
-          userId:1
+          roomId:Number(room),
+          userId:socket.userId
         }
        })      
     }
@@ -85,8 +90,8 @@ io.on("connection",(socket)=>{
           width:messageData.width,
           height:messageData.height,
           radius:messageData.radius,
-          roomId:1,
-          userId:1
+          roomId:Number(room),
+          userId:socket.userId
         }
        })       
     }
@@ -98,8 +103,8 @@ io.on("connection",(socket)=>{
           y1:messageData.y1,
           x2:messageData.x2,
           y2:messageData.y2,
-          roomId:1,
-          userId:1
+          roomId:Number(room),
+          userId:socket.userId
         }
        })      
     }
@@ -111,8 +116,8 @@ io.on("connection",(socket)=>{
           y1:messageData.y1,
           x2:messageData.x2,
           y2:messageData.y2,
-          roomId:1,
-          userId:1
+          roomId:Number(room),
+          userId:socket.userId
         }
        })       
     }
