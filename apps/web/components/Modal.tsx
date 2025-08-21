@@ -4,37 +4,49 @@ import React, { useState } from 'react'
 
 interface ModalProps {
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
+  type:"join" | "create"
 }
-function Modal({setModal}:ModalProps) {
+function Modal({setModal,type}:ModalProps) {
     const router= useRouter()
    const [name,setName]= useState("")
 
-   const handleClick=async(e:React.FormEvent)=>{
-    e.preventDefault();
-    const token= localStorage.getItem('authToken')
-    const res=await axios.post("http://localhost:3001/api/v1/room/createRoom",{name},
-      {
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
-      }
-    )
-    console.log(res.data)
-    if(res.data.roomId){
-      const roomId=res.data.roomId
-      router.push(`/canvas/${roomId}`)
-    }
-   }
+  const ModalVariant={
+    "join":{t1:"Join Shared Drawing",t2:"Enter the room ID to join a shared drawing session.",t3:"Enter Room ID:"},
+    "create":{t1:"Create New Drawing",t2:"Enter a title for your new drawing.",t3:"Enter Room name:"}
+  }
+
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const token = localStorage.getItem('authToken');
+
+  if (type === "create") {
+    const res = await axios.post(
+      "http://localhost:3001/api/v1/room/createRoom",
+      { name },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data.roomId) router.push(`/canvas/${res.data.roomId}`);
+  } else {
+    const res = await axios.post(
+      `http://localhost:3001/api/v1/room/${name}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data.member) router.push(`/canvas/${res.data.roomId}`);
+  }
+};
+
 
   return (
 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-  <form onSubmit={handleClick} className="bg-[#0f172a] text-white rounded-lg shadow-xl w-[480px] p-6">
+  <form onSubmit={handleSubmit} className="bg-[#0F141F] text-white rounded-lg shadow-xl w-[480px] border  border-gray-700 p-6">
 
-    <h2 className="text-xl font-semibold">Create New Drawing</h2>
-    <p className="text-sm text-gray-400 mt-1">Enter a title for your new drawing.</p>
+    <h2 className="text-xl font-semibold">{ModalVariant[type].t1}</h2>
+    <p className="text-sm text-gray-400 mt-1">{ModalVariant[type].t2}</p>
 
     <label htmlFor="docName" className="block mt-5 text-sm font-medium text-gray-300">
-      Enter Document name:
+      {ModalVariant[type].t3}
     </label>
     <input
       type="text"

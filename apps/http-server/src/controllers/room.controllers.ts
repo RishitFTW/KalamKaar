@@ -92,3 +92,49 @@ export async function deleteRoom(req: Request, res: Response) {
     });
   }
 }
+
+
+export async function addMember(req: Request, res: Response) {
+  const { roomId } = req.params;
+
+  try {
+    if (!roomId) {
+      return res.status(400).json({ error: "roomId is required" });
+    }
+
+    const room = await prisma.room.findUnique({
+      where: { id: Number(roomId) },
+    });
+
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    const existingMember = await prisma.member.findFirst({
+      where: {
+        roomId: Number(roomId),
+        userId: req.userId,
+      },
+    });
+
+    if (existingMember) {
+      return res.status(400).json({ error: "User already a member of this room" });
+    }
+
+    if (!req.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const member = await prisma.member.create({
+      data: {
+        userId: req.userId,
+        roomId: Number(roomId),
+      },
+    });
+
+    return res.status(201).json({ message: "Member added", member });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+}

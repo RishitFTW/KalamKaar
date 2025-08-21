@@ -14,6 +14,8 @@ function page() {
  const [modal, setModal]=useState(false);
  const [userId, setUserId]= useState<number | null>(null);
  const [render,setRerender]=useState(1);
+ const [type,setType]=useState<"join" | "create">("create")
+
  const router=useRouter();
  useEffect(()=>{
   const token= localStorage.getItem('authToken')
@@ -37,11 +39,11 @@ function page() {
   return (
     <div className="w-screen min-h-screen bg-black">
       <div>
-        <Navbar/>
+        <Navbar setModal={setModal} setType={setType}/>
       </div>
       <div className='px-8'>
       <div className='pt-10'>
-        <Welcome setModal={setModal}/>
+        <Welcome setModal={setModal} setType={setType}/>
       </div>
       <h3 className="text-2xl font-bold mb-6 text-white">All Your Drawings</h3>   
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -60,11 +62,11 @@ function page() {
         ))}
           <div className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-teal-500 hover:text-teal-400 hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
               <div className=''><Add/></div>
-              <div onClick={()=>{setModal(true)}} className="font-medium">New Drawing</div>
+              <div onClick={()=>{setModal(true); setType("create")}} className="font-medium">New Drawing</div>
           </div>         
       </div> 
       </div>
-      {modal && <Modal setModal={setModal}/>}
+      {modal && <Modal setModal={setModal} type={type}/>}
     </div>
     
   )
