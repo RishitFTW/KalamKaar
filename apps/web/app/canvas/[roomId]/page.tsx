@@ -6,6 +6,18 @@ import { drawRoundedDiamond } from "../../../lib/DiamondShape"
 import axios from "axios";
 
 import { useParams } from "next/navigation";
+import Square from "../../../components/Square";
+import Home from "../../icons/Home";
+import Share from "../../icons/Share";
+import Users from "../../icons/Users";
+import Button from "../../../components/Button";
+import RectTool from "../../tools/RectTool";
+import Handgrip from "../../tools/Handgrip";
+import Rhombus from "../../tools/Rhombus";
+import Circle from "../../tools/Circle";
+import Line from "../../tools/Line";
+import Pencil from "../../tools/Pencil";
+import Bin from "../../tools/Bin";
 
 interface Rectangle {
   type: "rectangle";
@@ -489,14 +501,22 @@ else if (selected === "icon") {
     <div className="w-screen h-screen bg-gray-300">
          <canvas ref={canvasRef} className="h-full w-full bg-[#121212] relative">
          </canvas>
-         <div className="absolute top-4 left-4 flex flex-col gap-1">
-            <button onClick={()=>{setSelected("rectangle")}} className="bg-white text-black p-1 rounded-md">rectangle</button>
-            <button onClick={()=>{setSelected("ellipse")}} className="bg-white text-black rounded-md">circle</button>
-            <button onClick={()=>{setSelected("line")}} className="bg-white text-black rounded-md">line</button>
-            <button onClick={() => setSelected("icon")} className="bg-white text-black rounded-md">icon</button>
-            <button onClick={() => setSelected("pen")} className="bg-white text-black rounded-md">pen</button>
-
-            <button onClick={handleClear} className="bg-red-500 text-black rounded-md">clear</button>
+         <div className="absolute top-4 left-8">
+           <Square icon={<Home/>}/>
+         </div>
+         <div className="absolute top-4 right-8">
+           <Square icon={<Share/>}/>
+         </div>
+         <div className="absolute bottom-4 right-8">
+           <Square icon={<Users flag={true}/>}/>
+         </div>
+         
+         <div className="absolute top-4 left-162 flex  bg-[#27272A] gap-3 px-3 py-1 rounded-lg">
+            <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
+            <Rhombus onClick={()=>{setSelected("icon")}} selected={selected}/>
+            <Circle onClick={()=>{setSelected("ellipse")}} selected={selected}/>
+            <Line onClick={()=>{setSelected("line")}} selected={selected}/>
+            <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
          </div>
          
     </div>
