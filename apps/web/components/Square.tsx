@@ -5,7 +5,7 @@ interface SqProps{
 }
 function Square({icon}:SqProps) {
   return (
-    <div className='bg-[#27272A] rounded-md p-2 px-4 cursor-pointer'>
+    <div className='bg-[#48488E] rounded-md p-2 px-4 cursor-pointer'>
       {icon}
     </div>
   )

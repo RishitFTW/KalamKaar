@@ -2,22 +2,19 @@
 import { useEffect, useRef, useState } from "react";
 import { getSocket } from "../../../lib/socket";
 import { drawRoundedDiamond } from "../../../lib/DiamondShape"
-
 import axios from "axios";
-
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Square from "../../../components/Square";
 import Home from "../../icons/Home";
 import Share from "../../icons/Share";
 import Users from "../../icons/Users";
-import Button from "../../../components/Button";
 import RectTool from "../../tools/RectTool";
-import Handgrip from "../../tools/Handgrip";
 import Rhombus from "../../tools/Rhombus";
 import Circle from "../../tools/Circle";
 import Line from "../../tools/Line";
 import Pencil from "../../tools/Pencil";
 import Bin from "../../tools/Bin";
+
 
 interface Rectangle {
   type: "rectangle";
@@ -64,11 +61,18 @@ export default function Canvas() {
   const canvasRef= useRef<HTMLCanvasElement>(null);
   const shapesRef = useRef<Shape[]>([]);
   const [selected,setSelected]=useState('circle')
+  const router= useRouter();
 
-  const params= useParams();
-  const roomId=params.roomId
-
+  const params = useParams();
+  const roomId = params?.roomId as string | undefined;
+    if (!roomId) {
+    return <div>No roomId provided</div>;
+  }
   useEffect(()=>{
+    const token=localStorage.getItem('authToken');
+    if(!token){
+      router.push('/')
+    }
     const socket=getSocket(Number(roomId))
     console.log(roomId)
     socket.on("connect", () => {
@@ -487,7 +491,7 @@ else if (selected === "icon") {
 
   },[selected]);
   
-  const handleClear=()=>{
+  const handleClear=async()=>{
     const canvas= canvasRef.current;
     if(!canvas) return;
     const ctx= canvas.getContext('2d');
@@ -495,6 +499,22 @@ else if (selected === "icon") {
        shapesRef.current=[];
        ctx.clearRect(0, 0, canvas.width, canvas.height); 
     }
+    try {
+      const token=localStorage.getItem('authToken')
+      const res = await axios.delete(
+        `http://localhost:3001/api/v1/chat/${roomId}`,
+        {
+          headers: {
+            Authorization:`Bearer ${token}`
+          },
+        }
+      );
+
+      console.log("Deleted:", res.data);
+
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }    
   };
 
   return (
@@ -517,6 +537,7 @@ else if (selected === "icon") {
             <Circle onClick={()=>{setSelected("ellipse")}} selected={selected}/>
             <Line onClick={()=>{setSelected("line")}} selected={selected}/>
             <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
+            <Bin onClick={handleClear} />
          </div>
          
     </div>
