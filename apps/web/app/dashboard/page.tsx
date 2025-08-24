@@ -7,6 +7,7 @@ import Add from '../icons/Add'
 import axios from 'axios'
 import Modal from '../../components/Modal'
 import { useRouter } from 'next/navigation'
+import Loader from '../../components/Loader'
 
 
 function page() {
@@ -14,6 +15,7 @@ function page() {
  const [modal, setModal]=useState(false);
  const [userId, setUserId]= useState<number | null>(null);
  const [render,setRerender]=useState(1);
+ const [loading, setLoading]=useState(true)
  const [type,setType]=useState<"join" | "create">("create")
 
  const router=useRouter();
@@ -32,9 +34,14 @@ function page() {
     console.log(data)
     setRooms(data.rooms)
     setUserId(data.userId)
+    setLoading(false)
    }
    f()
  },[render])
+
+  if(loading){
+    return <Loader/>
+  }
 
   return (
     <div className="w-screen min-h-screen bg-black">
@@ -60,7 +67,7 @@ function page() {
             />
           )
         ))}
-          <div className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-teal-500 hover:text-teal-400 hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
+          <div className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-[#703d90] hover:text-[#703d90] hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
               <div className=''><Add/></div>
               <div onClick={()=>{setModal(true); setType("create")}} className="font-medium">New Drawing</div>
           </div>         

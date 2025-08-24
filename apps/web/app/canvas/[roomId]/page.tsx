@@ -14,53 +14,17 @@ import Circle from "../../tools/Circle";
 import Line from "../../tools/Line";
 import Pencil from "../../tools/Pencil";
 import Bin from "../../tools/Bin";
-
-
-interface Rectangle {
-  type: "rectangle";
-  x1: number;
-  y1: number;
-  width: number;
-  height: number;
-}
-
-interface Line{
-  type:"line"
-  x1:number,
-  y1:number,
-  x2:number,
-  y2:number,
-}
-
-interface Ellipse {
-  type: "ellipse";
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-interface Icon {
-  type: "icon";
-  x1: number;
-  y1: number;
-  width: number;
-  height: number;
-  radius: number; 
-}
-
-interface Pen{
-  type:"pen";
-  width:number;
-  points:{x:number,y:number}[]
-}
-
-type Shape = Rectangle | Ellipse | Line | Icon | Pen;
+import Loader from "../../../components/Loader";
+import { RenderShapes } from "../../../lib/renderShapes";
+import { Shape } from "../../types/Shape";
 
 export default function Canvas() {
+
   const canvasRef= useRef<HTMLCanvasElement>(null);
   const shapesRef = useRef<Shape[]>([]);
   const [selected,setSelected]=useState('circle')
+  const [loading,setLoading]=useState(true);
+  const panOffSetref= useRef({x:0,y:0});
   const router= useRouter();
 
   const params = useParams();
@@ -96,49 +60,10 @@ export default function Canvas() {
     
     ctx.strokeStyle="white";
        
-    const renderShapes=()=>{
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(const shape of shapesRef.current){
-        if(shape.type=="rectangle"){
-          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
-        }
-        else if(shape.type=="ellipse"){
-          ctx.beginPath();
-          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
-          ctx.stroke();
-        }
-        else if(shape.type=='line'){
-          ctx.beginPath(); 
-          ctx.moveTo(shape.x1, shape.y1); 
-          ctx.lineTo(shape.x2, shape.y2); 
-          ctx.stroke();        
-        }
-        else if(shape.type=='icon'){
-          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
-        }
-        else if(shape.type=='pen'){
-          ctx.lineWidth=2;
-          ctx.lineCap='round';
-          ctx.beginPath();
-          if(shape.points.length>1){
-            const starting= shape.points[0];
-            if(starting){
-              ctx.moveTo(starting.x,starting.y);
-              for(let i=1; i<shape.points.length; i++){
-                let pt=shape.points[i];
-                if(pt){
-                  ctx.lineTo(pt.x,pt.y);
-                }
-              }
-            }
-          }
-          ctx.stroke();
-        }
-      }
-    };
-    renderShapes()      
+    RenderShapes(shapesRef,panOffSetref,canvasRef)      
     }
     f();
+    setLoading(false)
     socket.on('recieve',(messageData)=>{
     shapesRef.current.push(messageData)
      const canvas= canvasRef.current;
@@ -151,49 +76,8 @@ export default function Canvas() {
     
     ctx.strokeStyle="white";
        
-    const renderShapes=()=>{
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(const shape of shapesRef.current){
-        if(shape.type=="rectangle"){
-          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
-        }
-        else if(shape.type=="ellipse"){
-          ctx.beginPath();
-          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
-          ctx.stroke();
-        }
-        else if(shape.type=='line'){
-          ctx.beginPath(); 
-          ctx.moveTo(shape.x1, shape.y1); 
-          ctx.lineTo(shape.x2, shape.y2); 
-          ctx.stroke();        
-        }
-        else if(shape.type=='icon'){
-          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
-        }
-        else if(shape.type=='pen'){
-          ctx.lineWidth=2;
-          ctx.lineCap='round';
-          ctx.beginPath();
-          if(shape.points.length>1){
-            const starting= shape.points[0];
-            if(starting){
-              ctx.moveTo(starting.x,starting.y);
-              for(let i=1; i<shape.points.length; i++){
-                let pt=shape.points[i];
-                if(pt){
-                  ctx.lineTo(pt.x,pt.y);
-                }
-              }
-            }
-          }
-          ctx.stroke();
-        }
-      }
-    };
-    renderShapes()
+    RenderShapes(shapesRef,panOffSetref,canvasRef) 
     })
-    
   },[])
 
   useEffect(()=>{
@@ -208,49 +92,9 @@ export default function Canvas() {
     
     ctx.strokeStyle="white";
 
-    const renderShapes=()=>{
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(const shape of shapesRef.current){
-        if(shape.type=="rectangle"){
-          ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
-        }
-        else if(shape.type=="ellipse"){
-          ctx.beginPath();
-          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
-          ctx.stroke();
-        }
-        else if(shape.type=='line'){
-          ctx.beginPath(); 
-          ctx.moveTo(shape.x1, shape.y1); 
-          ctx.lineTo(shape.x2, shape.y2); 
-          ctx.stroke();        
-        }
-        else if(shape.type=='icon'){
-          drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
-        }
-        else if(shape.type=='pen'){
-          ctx.lineWidth=2;
-          ctx.lineCap='round';
-          ctx.beginPath();
-          if(shape.points.length>1){
-            const starting= shape.points[0];
-            if(starting){
-              ctx.moveTo(starting.x,starting.y);
-              for(let i=1; i<shape.points.length; i++){
-                let pt=shape.points[i];
-                if(pt){
-                  ctx.lineTo(pt.x,pt.y);
-                }
-              }
-            }
-          }
-          ctx.stroke();
-        }
-      }
-    };
-    renderShapes();
+    RenderShapes(shapesRef,panOffSetref,canvasRef) 
 
-    if(selected=='rectangle'){
+     if(selected=='rectangle'){
       let stX=0,stY=0;
       let clicked=false;
 
@@ -266,7 +110,7 @@ export default function Canvas() {
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
-          renderShapes();       
+          RenderShapes(shapesRef,panOffSetref,canvasRef)       
           const h=e.clientY-stY;
           const w=e.clientX-stX;
           ctx.strokeRect(stX,stY,w,h);
@@ -316,7 +160,7 @@ export default function Canvas() {
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
-          renderShapes();
+          RenderShapes(shapesRef,panOffSetref,canvasRef) 
           let w = e.clientX - stX;
           let h = e.clientY - stY;
           let x = stX + w / 2;
@@ -366,7 +210,7 @@ export default function Canvas() {
       };
       const handleMousemove=(e:MouseEvent)=>{
         if(clicked){
-          renderShapes();
+              RenderShapes(shapesRef,panOffSetref,canvasRef) 
           ctx.beginPath(); 
           ctx.moveTo(startX, startY); 
           ctx.lineTo(e.clientX, e.clientY);
@@ -419,7 +263,7 @@ else if (selected === "icon") {
 
   const handleMousemove = (e: MouseEvent) => {
     if (clicked) {
-      renderShapes();
+        RenderShapes(shapesRef,panOffSetref,canvasRef) 
       let w = e.clientX - stX;
       let h = e.clientY - stY;
       let cx = stX + w / 2;
@@ -456,7 +300,7 @@ else if (selected === "icon") {
   const handleMousemove=(e:MouseEvent)=>{
     if(clicked){
       currPoints.push({x:e.clientX,y:e.clientY});
-      renderShapes();
+      RenderShapes(shapesRef,panOffSetref,canvasRef) 
       ctx.lineWidth = 2;
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -487,6 +331,52 @@ else if (selected === "icon") {
     canvas.removeEventListener("mousemove", handleMousemove);
   };  
  }
+ else if(selected=='handgrip'){
+      RenderShapes(shapesRef,panOffSetref,canvasRef) 
+      let isPanning = false;
+      let panStart = { x: 0, y: 0 };
+      let currPan={x:panOffSetref.current.x,y:panOffSetref.current.y}
+      const handleMouseDown = (e: MouseEvent) => {
+        if (e.button !== 0) return; 
+        isPanning = true;
+        panStart = {
+          x: e.clientX,
+          y: e.clientY,
+        };
+        currPan={x:panOffSetref.current.x,y:panOffSetref.current.y}
+
+      };
+
+      const handleMouseUp = () => {
+        isPanning = false;
+      };
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (isPanning) {
+          const newOffset = {
+            x: e.clientX - panStart.x,
+            y: e.clientY - panStart.y,
+          };
+          const newOffset1={
+            x:newOffset.x+currPan.x,
+            y:newOffset.y+currPan.y
+          }
+          panOffSetref.current = newOffset1;
+          
+          RenderShapes(shapesRef,panOffSetref,canvasRef) 
+        }
+      };
+
+      canvas.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mousemove", handleMouseMove);
+
+      return () => {
+        canvas.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("mousemove", handleMouseMove);
+      };  
+ }
 
 
   },[selected]);
@@ -516,13 +406,15 @@ else if (selected === "icon") {
       console.error("Error deleting chat:", error);
     }    
   };
-
+  if(loading){
+    return <Loader/>
+  }
   return (
     <div className="w-screen h-screen bg-gray-300">
          <canvas ref={canvasRef} className="h-full w-full bg-[#121212] relative">
          </canvas>
          <div className="absolute top-4 left-8">
-           <Square icon={<Home/>}/>
+           <Square icon={<Home/>} onClick={()=>{router.push('/dashboard')}}/>
          </div>
          <div className="absolute top-4 right-8">
            <Square icon={<Share/>}/>
@@ -538,6 +430,7 @@ else if (selected === "icon") {
             <Line onClick={()=>{setSelected("line")}} selected={selected}/>
             <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
             <Bin onClick={handleClear} />
+            <div onClick={()=>{setSelected("handgrip")}}className={`${selected=="handgrip" ? "bg-purple-500":""}`}>H</div>
          </div>
          
     </div>

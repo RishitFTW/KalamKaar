@@ -37,7 +37,7 @@ const handleDelete = async () => {
   return (
     <div key={id} onClick={handleClick}>
     <div className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-800 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 hover:border-gray-700 cursor-pointer relative">
-      <div className="h-40" style={{ backgroundColor: '#4a2a5e' }}></div>
+      <div className="h-40 bg-[#48488E]" ></div>
       <div className="p-4 flex justify-between items-center">
         <span className="font-medium text-white">{name}</span>
         <div className="flex items-center gap-2 text-gray-500 text-sm">
