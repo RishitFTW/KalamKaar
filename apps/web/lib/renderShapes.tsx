@@ -16,6 +16,8 @@ export function RenderShapes(
       for(const shape of shapesRef.current){
         if(shape.type=="rectangle"){
           ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
+          console.log(`x1->${shape.x1} y->${shape.y1} width->${shape.width} height->${shape.height}`)
+          console.log(`PanX1>${panOffSetref.current.x} PanY->${panOffSetref.current.y}`)
         }
         else if(shape.type=="ellipse"){
           ctx.beginPath();
