@@ -553,13 +553,14 @@ useEffect(() => {
            <Square icon={<Users flag={true}/>}/>
          </div>
          
-         <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-3 py-1 rounded-lg">
+         <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
             <Rhombus onClick={()=>{setSelected("icon")}} selected={selected}/>
             <Circle onClick={()=>{setSelected("ellipse")}} selected={selected}/>
             <Line onClick={()=>{setSelected("line")}} selected={selected}/>
             <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
+             <div className="w-[1px] h-6 bg-zinc-600 mx-2 mt-1"></div>
             <Bin onClick={handleClear} />
          </div>
          
