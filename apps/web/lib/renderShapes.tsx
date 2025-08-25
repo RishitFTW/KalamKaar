@@ -5,7 +5,7 @@ export function RenderShapes(
   shapesRef: React.MutableRefObject<Shape[]>,
   panOffSetref: React.MutableRefObject<{ x: number; y: number }>,
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  //zoomRef: React.MutableRefObject<number>  
+  zoomRef: React.MutableRefObject<number>  
 ){
   const canvas = canvasRef.current;
   if (!canvas) return;
@@ -15,12 +15,10 @@ export function RenderShapes(
       ctx.clearRect(0,0,canvas.width,canvas.height);
       ctx.save()
       ctx.translate(panOffSetref.current.x,panOffSetref.current.y)
-   //   ctx.scale(zoomRef.current, zoomRef.current);
+      ctx.scale(zoomRef.current, zoomRef.current);
       for(const shape of shapesRef.current){
         if(shape.type=="rectangle"){
           ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
-          console.log(`x1->${shape.x1} y->${shape.y1} width->${shape.width} height->${shape.height}`)
-          console.log(`PanX1>${panOffSetref.current.x} PanY->${panOffSetref.current.y}`)
         }
         else if(shape.type=="ellipse"){
           ctx.beginPath();

@@ -25,7 +25,7 @@ export default function Canvas() {
   const [selected,setSelected]=useState('circle')
   const [loading,setLoading]=useState(true);
   const panOffSetref= useRef({x:0,y:0});
-  const zommOffSetref= useRef(1)
+  const zoomRef= useRef(1)
   const router= useRouter();
 
   const params = useParams();
@@ -33,6 +33,18 @@ export default function Canvas() {
     if (!roomId) {
     return <div>No roomId provided</div>;
   }
+
+const toWorldCoords = (x: number, y: number) => ({
+  x: (x - panOffSetref.current.x) / zoomRef.current,
+  y: (y - panOffSetref.current.y) / zoomRef.current,
+});
+
+const toScreenCoords = (x: number, y: number) => ({
+  x: x * zoomRef.current + panOffSetref.current.x,
+  y: y * zoomRef.current + panOffSetref.current.y,
+});
+
+
   useEffect(()=>{
     const token=localStorage.getItem('authToken');
     if(!token){
@@ -61,7 +73,7 @@ export default function Canvas() {
     
     ctx.strokeStyle="white";
        
-    RenderShapes(shapesRef,panOffSetref,canvasRef)      
+    RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef)      
     }
     f();
     setLoading(false)
@@ -77,12 +89,12 @@ export default function Canvas() {
     
     ctx.strokeStyle="white";
        
-    RenderShapes(shapesRef,panOffSetref,canvasRef) 
+    RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
     })
   },[])
 
   useEffect(() => {
-    const socket = getSocket(1);
+    const socket = getSocket(Number(roomId));
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -93,7 +105,7 @@ export default function Canvas() {
 
     ctx.strokeStyle = "white";
 
-    RenderShapes(shapesRef, panOffSetref, canvasRef)
+    RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef)
 
     if (selected == 'rectangle') {
         let stX = 0, stY = 0;
@@ -101,29 +113,35 @@ export default function Canvas() {
 
         const handleMousedown = (e: MouseEvent) => {
             clicked = true;
-            stX = e.clientX;
-            stY = e.clientY;
+            const world= toWorldCoords(e.clientX,e.clientY)
+            stX = world.x;
+            stY = world.y;
         };
         const handleMouseup = (e: MouseEvent) => {
             if (!clicked) return;
             clicked = false;
 
             // FIX: Convert start coordinates to world space before saving
-            const worldX1 = stX - panOffSetref.current.x;
-            const worldY1 = stY - panOffSetref.current.y;
-            const width = e.clientX - stX;
-            const height = e.clientY - stY;
+            const world= toWorldCoords(e.clientX,e.clientY)
+            const width = world.x - stX;
+            const height = world.y - stY;
 
-            const newShape = { type: "rectangle", x1: worldX1, y1: worldY1, width, height };
-            shapesRef.current.push({ type: "rectangle", x1: worldX1, y1: worldY1, width, height });
+            const newShape = { type: "rectangle", x1: stX, y1: stY, width, height };
+            shapesRef.current.push({ type: "rectangle", x1: stX, y1: stY, width, height });
             socket.emit('msg', newShape)
         };
         const handleMousemove = (e: MouseEvent) => {
             if (clicked) {
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
-                const h = e.clientY - stY;
-                const w = e.clientX - stX;
-                ctx.strokeRect(stX, stY, w, h);
+                RenderShapes(shapesRef, panOffSetref, canvasRef,zoomRef)
+                const world=toWorldCoords(e.clientX,e.clientY)
+                const h = world.y - stY;
+                const w = world.x - stX;
+                    ctx.save();
+                    ctx.translate(panOffSetref.current.x, panOffSetref.current.y);
+                    ctx.scale(zoomRef.current, zoomRef.current);
+                    ctx.strokeRect(stX, stY, w, h);
+                    ctx.restore();
+
             }
         };
 
@@ -137,241 +155,282 @@ export default function Canvas() {
         };
     }
 
-    else if (selected == 'ellipse') {
-        let stX = 0, stY = 0;
-        let clicked = false;
-        const handleMousedown = (e: MouseEvent) => {
-            clicked = true;
-            stX = e.clientX;
-            stY = e.clientY;
+else if (selected == 'ellipse') {
+    let stX = 0, stY = 0;
+    let clicked = false;
+
+    const handleMousedown = (e: MouseEvent) => {
+        clicked = true;
+        const world = toWorldCoords(e.clientX, e.clientY);
+        stX = world.x;
+        stY = world.y;
+    };
+
+    const handleMouseup = (e: MouseEvent) => {
+        if (!clicked) return;
+        clicked = false;
+        
+        const world = toWorldCoords(e.clientX, e.clientY);
+        const w = world.x - stX;
+        const h = world.y - stY;
+
+        const worldCenterX = stX + w / 2;
+        const worldCenterY = stY + h / 2;
+        const rx = Math.abs(w) / 2;
+        const ry = Math.abs(h) / 2;
+
+        const newShape = {
+            type: "ellipse",
+            x1: worldCenterX,
+            y1: worldCenterY,
+            x2: rx,
+            y2: ry
         };
-        const handleMouseup = (e: MouseEvent) => {
-            if (!clicked) return;
-            clicked = false;
-            let w = e.clientX - stX;
-            let h = e.clientY - stY;
+        
+        shapesRef.current.push({
+            type: "ellipse",
+            x1: worldCenterX,
+            y1: worldCenterY,
+            x2: rx,
+            y2: ry
+        });
+        socket.emit('msg', newShape);
+        RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+    };
 
-            // FIX: Calculate center in screen space, then convert to world space for saving
-            let screenCenterX = stX + w / 2;
-            let screenCenterY = stY + h / 2;
-            let worldCenterX = screenCenterX - panOffSetref.current.x;
-            let worldCenterY = screenCenterY - panOffSetref.current.y;
-
-            let rx = Math.abs(w) / 2;
-            let ry = Math.abs(h) / 2;
-            const newShape = {
-                type: "ellipse",
-                x1: worldCenterX,
-                y1: worldCenterY,
-                x2: rx,
-                y2: ry
-            };
-            shapesRef.current.push({
-                type: "ellipse",
-                x1: worldCenterX,
-                y1: worldCenterY,
-                x2: rx,
-                y2: ry
-            });
-            socket.emit('msg', newShape)
-        };
-        const handleMousemove = (e: MouseEvent) => {
-            if (clicked) {
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
-                let w = e.clientX - stX;
-                let h = e.clientY - stY;
-                let x = stX + w / 2;
-                let y = stY + h / 2;
-                let rx = Math.abs(w) / 2;
-                let ry = Math.abs(h) / 2;
-                ctx.beginPath();
-                ctx.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI);
-                ctx.stroke();
-            }
-        };
-        canvas.addEventListener('mousedown', handleMousedown);
-        canvas.addEventListener('mouseup', handleMouseup);
-        canvas.addEventListener('mousemove', handleMousemove);
-
-        return () => {
-            canvas.removeEventListener("mousedown", handleMousedown);
-            canvas.removeEventListener("mouseup", handleMouseup);
-            canvas.removeEventListener("mousemove", handleMousemove);
-        };
-    }
-    else if (selected == "line") {
-
-        let startX = 0, startY = 0;
-        let clicked = false;
-        const handleMousedown = (e: MouseEvent) => {
-            clicked = true;
-            startX = e.clientX;
-            startY = e.clientY;
-        };
-        const handleMouseup = (e: MouseEvent) => {
-            if (!clicked) return;
-            clicked = false;
-
-            // FIX: Convert both start and end points to world space
-            const worldX1 = startX - panOffSetref.current.x;
-            const worldY1 = startY - panOffSetref.current.y;
-            const worldX2 = e.clientX - panOffSetref.current.x;
-            const worldY2 = e.clientY - panOffSetref.current.y;
-
-            const newShape = {
-                type: "line",
-                x1: worldX1,
-                y1: worldY1,
-                x2: worldX2,
-                y2: worldY2,
-            };
-            shapesRef.current.push({
-                type: "line",
-                x1: worldX1,
-                y1: worldY1,
-                x2: worldX2,
-                y2: worldY2,
-            });
-            socket.emit('msg', newShape)
-        };
-        const handleMousemove = (e: MouseEvent) => {
-            if (clicked) {
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(e.clientX, e.clientY);
-                ctx.stroke();
-            }
-        };
-        canvas.addEventListener('mousedown', handleMousedown);
-        canvas.addEventListener('mouseup', handleMouseup);
-        canvas.addEventListener('mousemove', handleMousemove);
-
-        return () => {
-            canvas.removeEventListener("mousedown", handleMousedown);
-            canvas.removeEventListener("mouseup", handleMouseup);
-            canvas.removeEventListener("mousemove", handleMousemove);
-        };
-    }
-    else if (selected === "icon") {
-        let stX = 0, stY = 0;
-        let clicked = false;
-
-        const handleMousedown = (e: MouseEvent) => {
-            clicked = true;
-            stX = e.clientX;
-            stY = e.clientY;
-        };
-
-        const handleMouseup = (e: MouseEvent) => {
-            if (!clicked) return;
-            clicked = false;
-            let w = e.clientX - stX;
-            let h = e.clientY - stY;
-
-            // FIX: Calculate screen center, then convert to world center
-            let screenCx = stX + w / 2;
-            let screenCy = stY + h / 2;
-            let worldCx = screenCx - panOffSetref.current.x;
-            let worldCy = screenCy - panOffSetref.current.y;
-
-            const newShape = {
-                type: "icon",
-                x1: worldCx,
-                y1: worldCy,
-                width: Math.abs(w),
-                height: Math.abs(h),
-                radius: 20
-            };
-            shapesRef.current.push({
-                type: "icon",
-                x1: worldCx,
-                y1: worldCy,
-                width: Math.abs(w),
-                height: Math.abs(h),
-                radius: 20
-            });
-            socket.emit('msg', newShape)
-        };
-
-        const handleMousemove = (e: MouseEvent) => {
-            if (clicked) {
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
-                let w = e.clientX - stX;
-                let h = e.clientY - stY;
-                let cx = stX + w / 2;
-                let cy = stY + h / 2;
-                drawRoundedDiamond(ctx, cx, cy, Math.abs(w), Math.abs(h), 20);
-            }
-        };
-
-        canvas.addEventListener("mousedown", handleMousedown);
-        canvas.addEventListener("mouseup", handleMouseup);
-        canvas.addEventListener("mousemove", handleMousemove);
-
-        return () => {
-            canvas.removeEventListener("mousedown", handleMousedown);
-            canvas.removeEventListener("mouseup", handleMouseup);
-            canvas.removeEventListener("mousemove", handleMousemove);
-        };
-    }
-    else if (selected == 'pen') {
-        let currPoints: { x: number, y: number }[] = []
-        let clicked = false;
-        const handleMousedown = (e: MouseEvent) => {
-            clicked = true;
-            currPoints.push({ x: e.clientX, y: e.clientY })
-        }
-        const handleMouseup = (e: MouseEvent) => {
-            if (!clicked) return;
-            clicked = false;
-
-            // FIX: Convert all collected points to world space before saving
-            const worldPoints = currPoints.map(p => ({
-                x: p.x - panOffSetref.current.x,
-                y: p.y - panOffSetref.current.y
-            }));
+    const handleMousemove = (e: MouseEvent) => {
+        if (clicked) {
+            RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
             
-            shapesRef.current.push({ type: "pen", width: 2, points: worldPoints });
-            socket.emit('msg', { type: "pen", lineWidth: 2, points: worldPoints });
-            currPoints = [];
-        }
-        const handleMousemove = (e: MouseEvent) => {
-            if (clicked) {
-                currPoints.push({ x: e.clientX, y: e.clientY });
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
+            const world = toWorldCoords(e.clientX, e.clientY);
+            const w = world.x - stX;
+            const h = world.y - stY;
 
-                if (currPoints.length > 1) {
-                    let start = currPoints[0];
-                    if (start) {
-                        ctx.moveTo(start.x, start.y)
-                        for (let i = 1; i < currPoints.length; i++) {
-                            const pt = currPoints[i];
-                            if (pt) {
-                                ctx.lineTo(pt.x, pt.y);
-                            }
-                        }
+            const worldCenterX = stX + w / 2;
+            const worldCenterY = stY + h / 2;
+            const rx = Math.abs(w) / 2;
+            const ry = Math.abs(h) / 2;
+            
+            ctx.save();
+            ctx.translate(panOffSetref.current.x, panOffSetref.current.y);
+            ctx.scale(zoomRef.current, zoomRef.current);
+            ctx.beginPath();
+            ctx.ellipse(worldCenterX, worldCenterY, rx, ry, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.restore();
+        }
+    };
+
+    canvas.addEventListener('mousedown', handleMousedown);
+    canvas.addEventListener('mouseup', handleMouseup);
+    canvas.addEventListener('mousemove', handleMousemove);
+
+    return () => {
+        canvas.removeEventListener("mousedown", handleMousedown);
+        canvas.removeEventListener("mouseup", handleMouseup);
+        canvas.removeEventListener("mousemove", handleMousemove);
+    };
+}
+else if (selected == "line") {
+    let startX = 0, startY = 0;
+    let clicked = false;
+
+    const handleMousedown = (e: MouseEvent) => {
+        clicked = true;
+        startX = e.clientX;
+        startY = e.clientY;
+    };
+
+    const handleMouseup = (e: MouseEvent) => {
+        if (!clicked) return;
+        clicked = false;
+
+        const world1 = toWorldCoords(startX, startY);
+        const world2 = toWorldCoords(e.clientX, e.clientY);
+
+        const newShape = {
+            type: "line" as const, 
+            x1: world1.x,
+            y1: world1.y,
+            x2: world2.x,
+            y2: world2.y, 
+        };
+        
+        shapesRef.current.push(newShape);
+        socket.emit('msg', newShape);
+        RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+    };
+
+    const handleMousemove = (e: MouseEvent) => {
+        if (clicked) {
+            RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(e.clientX, e.clientY);
+            ctx.stroke();
+            ctx.restore();
+        }
+    };
+
+    canvas.addEventListener('mousedown', handleMousedown);
+    canvas.addEventListener('mouseup', handleMouseup);
+    canvas.addEventListener('mousemove', handleMousemove);
+
+    return () => {
+        canvas.removeEventListener("mousedown", handleMousedown);
+        canvas.removeEventListener("mouseup", handleMouseup);
+        canvas.removeEventListener("mousemove", handleMousemove);
+    };
+}
+else if (selected === "icon") {
+    let stX = 0, stY = 0;
+    let clicked = false;
+
+    const handleMousedown = (e: MouseEvent) => {
+        clicked = true;
+        stX = e.clientX;
+        stY = e.clientY;
+    };
+
+    const handleMouseup = (e: MouseEvent) => {
+        if (!clicked) return;
+        clicked = false;
+        
+        const w = e.clientX - stX;
+        const h = e.clientY - stY;
+        const screenCx = stX + w / 2;
+        const screenCy = stY + h / 2;
+
+        const world = toWorldCoords(screenCx, screenCy);
+        
+        const worldWidth = Math.abs(w) / zoomRef.current;
+        const worldHeight = Math.abs(h) / zoomRef.current;
+
+        const newShape = {
+            type: "icon" as const,
+            x1: world.x,
+            y1: world.y,
+            width: worldWidth,
+            height: worldHeight,
+            radius: 20
+        };
+        
+        shapesRef.current.push(newShape);
+        socket.emit('msg', newShape);
+        RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+    };
+
+    const handleMousemove = (e: MouseEvent) => {
+        if (clicked) {
+            RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+
+            const w = e.clientX - stX;
+            const h = e.clientY - stY;
+            const screenCx = stX + w / 2;
+            const screenCy = stY + h / 2;
+            
+            const worldCenter = toWorldCoords(screenCx, screenCy);
+            const worldWidth = Math.abs(w) / zoomRef.current;
+            const worldHeight = Math.abs(h) / zoomRef.current;
+            
+            ctx.save();
+            ctx.translate(panOffSetref.current.x, panOffSetref.current.y);
+            ctx.scale(zoomRef.current, zoomRef.current);
+
+            drawRoundedDiamond(ctx, worldCenter.x, worldCenter.y, worldWidth, worldHeight, 20);
+            ctx.restore();
+        }
+    };
+
+    canvas.addEventListener("mousedown", handleMousedown);
+    canvas.addEventListener("mouseup", handleMouseup);
+    canvas.addEventListener("mousemove", handleMousemove);
+
+    return () => {
+        canvas.removeEventListener("mousedown", handleMousedown);
+        canvas.removeEventListener("mouseup", handleMouseup);
+        canvas.removeEventListener("mousemove", handleMousemove);
+    };
+}
+else if (selected == 'pen') {
+    let currPoints: { x: number, y: number }[] = []; 
+    let clicked = false;
+
+    const handleMousedown = (e: MouseEvent) => {
+        clicked = true;
+        currPoints = [{ x: e.clientX, y: e.clientY }]; 
+    };
+
+    const handleMouseup = (e: MouseEvent) => {
+        if (!clicked || currPoints.length === 0) {
+            clicked = false;
+            return;
+        }
+        clicked = false;
+
+        const worldPoints = currPoints.map(p => toWorldCoords(p.x, p.y));
+        
+        const newShape = { 
+            type: "pen" as const, 
+            width: 2, 
+            points: worldPoints 
+        };
+
+        shapesRef.current.push(newShape);
+        socket.emit('msg', newShape);
+        currPoints = [];
+        RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+    };
+
+    const handleMousemove = (e: MouseEvent) => {
+        if (clicked) {
+            currPoints.push({ x: e.clientX, y: e.clientY });
+            
+            RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+
+            ctx.save();
+            ctx.translate(panOffSetref.current.x, panOffSetref.current.y);
+            ctx.scale(zoomRef.current, zoomRef.current);
+
+            ctx.lineWidth = 2 / zoomRef.current;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = "white"; 
+            ctx.beginPath();
+            
+
+            const worldPointsPreview = currPoints.map(p => toWorldCoords(p.x, p.y));
+
+            if (worldPointsPreview.length > 1) {
+                let start = worldPointsPreview[0];
+                if(!start){
+                    return;
+                }
+                ctx.moveTo(start.x, start.y);
+                for (let i = 1; i < worldPointsPreview.length; i++) {
+                    const pt = worldPointsPreview[i];
+                    if(pt){
+                       ctx.lineTo(pt.x, pt.y);
                     }
                 }
-                ctx.stroke()
             }
+            ctx.stroke();
+            ctx.restore();
         }
+    };
 
-        canvas.addEventListener('mousedown', handleMousedown)
-        canvas.addEventListener('mouseup', handleMouseup)
-        canvas.addEventListener('mousemove', handleMousemove)
+    canvas.addEventListener('mousedown', handleMousedown);
+    canvas.addEventListener('mouseup', handleMouseup);
+    canvas.addEventListener('mousemove', handleMousemove);
 
-        return () => {
-            canvas.removeEventListener("mousedown", handleMousedown);
-            canvas.removeEventListener("mouseup", handleMouseup);
-            canvas.removeEventListener("mousemove", handleMousemove);
-        };
-    }
+    return () => {
+        canvas.removeEventListener("mousedown", handleMousedown);
+        canvas.removeEventListener("mouseup", handleMouseup);
+        canvas.removeEventListener("mousemove", handleMousemove);
+    };
+}
     else if (selected == 'handgrip') {
-        RenderShapes(shapesRef, panOffSetref, canvasRef)
+        RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef)
         let isPanning = false;
         let panStart = { x: 0, y: 0 };
         let currPan = { x: panOffSetref.current.x, y: panOffSetref.current.y }
@@ -402,7 +461,7 @@ export default function Canvas() {
                 }
                 panOffSetref.current = newOffset1;
 
-                RenderShapes(shapesRef, panOffSetref, canvasRef)
+                RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef)
             }
         };
 
@@ -417,7 +476,38 @@ export default function Canvas() {
         };
     }
 
+
 }, [selected]);
+
+useEffect(() => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const handleWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    const zoomFactor = 1.1;
+    const mouse = { x: e.clientX, y: e.clientY };
+    console.log("chlra  h")
+
+    const worldPos = toWorldCoords(mouse.x, mouse.y);
+
+    if (e.deltaY < 0) {
+      zoomRef.current = Math.min(zoomRef.current * zoomFactor, 10);
+    } else {
+      zoomRef.current = Math.max(zoomRef.current / zoomFactor, 0.1);
+    }
+
+    const newScreenPos = toScreenCoords(worldPos.x, worldPos.y);
+    panOffSetref.current.x += mouse.x - newScreenPos.x;
+    panOffSetref.current.y += mouse.y - newScreenPos.y;
+
+    RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+  };
+
+  // 👇 safer to bind to window for consistent scrolling
+  canvas.addEventListener("wheel", handleWheel, { passive: false });
+  return () => canvas.removeEventListener("wheel", handleWheel);
+}, [RenderShapes, toWorldCoords, toScreenCoords]);
   
   const handleClear=async()=>{
     const canvas= canvasRef.current;
