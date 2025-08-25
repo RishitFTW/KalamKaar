@@ -20,10 +20,16 @@ export async function createUser(req:Request,res:Response) {
                 password:result.data.password
         }
     })
-    return res.status(201).json({
-        message: "User created successfully",
-        user,
-    }); 
+  const token = jwt.sign(
+    {id: user.id },
+    JWT_secret,
+    { expiresIn: "5h" }
+  );
+
+  return res.json({
+    message: "signed in successful",
+    token,
+  }); 
 }
 
 

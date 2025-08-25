@@ -3,7 +3,7 @@ import { CreateRoomSchema } from "@repo/common/types";
 import { prisma } from "@repo/db/client";
 
 export async function createRoom(req:Request,res:Response){
-  console.log("hogya confirm")
+
     const parsedData = CreateRoomSchema.safeParse(req.body);
     if (!parsedData.success) {
         res.json({
@@ -39,12 +39,11 @@ export async function fetchAllRooms(req:Request,res:Response){
       return res.status(400).json({ error: "userId is required" });
     }
 
-    // Find rooms where user is admin or member
     const rooms = await prisma.room.findMany({
       where: {
         OR: [
-          { adminId: userId }, // User is the admin
-          { members: { some: { userId: userId } } }, // User is a member
+          { adminId: userId },
+          { members: { some: { userId: userId } } }, 
         ],
       },
       include: {
@@ -59,7 +58,7 @@ export async function fetchAllRooms(req:Request,res:Response){
         },
       },
     });
-
+ 
     res.json({ 
       userId, 
       rooms 
@@ -73,7 +72,6 @@ export async function fetchAllRooms(req:Request,res:Response){
 
 export async function deleteRoom(req: Request, res: Response) {
   const { roomId } = req.params;
-  console.log("yha aya")
   try {
     const room = await prisma.room.delete({
       where: { id: Number(roomId) }

@@ -1,5 +1,5 @@
 import { drawRoundedDiamond } from "./DiamondShape";
-import { Shape } from "../app/types/Shape";
+import { Shape } from "../types/Shape";
 
 export function RenderShapes(
   shapesRef: React.MutableRefObject<Shape[]>,

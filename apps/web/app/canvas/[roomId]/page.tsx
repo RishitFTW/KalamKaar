@@ -8,31 +8,20 @@ import Square from "../../../components/Square";
 import Home from "../../icons/Home";
 import Share from "../../icons/Share";
 import Users from "../../icons/Users";
-import RectTool from "../../tools/RectTool";
-import Rhombus from "../../tools/Rhombus";
-import Circle from "../../tools/Circle";
-import Line from "../../tools/Line";
-import Pencil from "../../tools/Pencil";
-import Bin from "../../tools/Bin";
+import RectTool from "../../../tools/RectTool";
+import Rhombus from "../../../tools/Rhombus";
+import Circle from "../../../tools/Circle";
+import Line from "../../../tools/Line";
+import Pencil from "../../../tools/Pencil";
+import Bin from "../../../tools/Bin";
 import Loader from "../../../components/Loader";
+
+import { Shape } from "../../../types/Shape";
+import Hand from "../../../tools/Hand";
+import { toScreenCoords, toWorldCoords } from "../../../lib/CoordFunc";
 import { RenderShapes } from "../../../lib/renderShapes";
-import { Shape } from "../../types/Shape";
-import Hand from "../../tools/Hand";
+
 export default function Canvas() {
-
-  const canvasRef= useRef<HTMLCanvasElement>(null);
-  const shapesRef = useRef<Shape[]>([]);
-  const [selected,setSelected]=useState('circle')
-  const [loading,setLoading]=useState(true);
-  const panOffSetref= useRef({x:0,y:0});
-  const zoomRef= useRef(1)
-  const router= useRouter();
-
-  const params = useParams();
-  const roomId = params?.roomId as string | undefined;
-    if (!roomId) {
-    return <div>No roomId provided</div>;
-  }
 
 const toWorldCoords = (x: number, y: number) => ({
   x: (x - panOffSetref.current.x) / zoomRef.current,
@@ -43,6 +32,19 @@ const toScreenCoords = (x: number, y: number) => ({
   x: x * zoomRef.current + panOffSetref.current.x,
   y: y * zoomRef.current + panOffSetref.current.y,
 });
+  const canvasRef= useRef<HTMLCanvasElement>(null);
+  const shapesRef = useRef<Shape[]>([]);
+  const [selected,setSelected]=useState("")
+  const [loading,setLoading]=useState(true);
+  const panOffSetref= useRef({x:0,y:0});
+  const zoomRef= useRef(1)
+  const router= useRouter();
+
+  const params = useParams();
+  const roomId = params?.roomId as string | undefined;
+    if (!roomId) {
+    return <div>No roomId provided</div>;
+  }
 
 
   useEffect(()=>{
@@ -482,12 +484,12 @@ else if (selected == 'pen') {
 useEffect(() => {
   const canvas = canvasRef.current;
   if (!canvas) return;
-
+  console.log("running")
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
+    console.log("running")
     const zoomFactor = 1.1;
     const mouse = { x: e.clientX, y: e.clientY };
-    console.log("chlra  h")
 
     const worldPos = toWorldCoords(mouse.x, mouse.y);
 
@@ -504,7 +506,7 @@ useEffect(() => {
     RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
   };
 
-  // 👇 safer to bind to window for consistent scrolling
+
   canvas.addEventListener("wheel", handleWheel, { passive: false });
   return () => canvas.removeEventListener("wheel", handleWheel);
 }, [RenderShapes, toWorldCoords, toScreenCoords]);

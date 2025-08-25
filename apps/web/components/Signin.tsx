@@ -3,15 +3,14 @@ import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
-function Signup() {
+function Signin() {
     const [email, setEmail]= useState("")
     const [password, setPassword]= useState("")
-    const [name, setName]= useState("")
     const router= useRouter();
     const handleSubmit=async(e:React.FormEvent)=>{
         e.preventDefault();
-        const res=await axios.post('http://localhost:3001/api/v1/auth/signup',
-              {email,password,name}
+        const res=await axios.post('http://localhost:3001/api/v1/auth/signin',
+              {email,password}
             )
         const data= res.data;
         localStorage.setItem('authToken',data.token) 
@@ -24,18 +23,8 @@ function Signup() {
     onSubmit={handleSubmit}
     className="flex flex-col gap-4 bg-white p-8 rounded-2xl shadow-lg w-80"
   >
-    <h2 className="text-2xl font-semibold text-center text-black">Signup</h2>
+    <h2 className="text-2xl font-semibold text-center text-black">Login</h2>
 
-    {/* Name Input */}
-    <input
-      type="text"
-      value={name}
-      placeholder="Enter name"
-      onChange={(e) => setName(e.target.value)}
-      className="border border-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-    />
-
-    {/* Email Input */}
     <input
       value={email}
       type="text"
@@ -44,7 +33,6 @@ function Signup() {
       className="border border-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
     />
 
-    {/* Password Input */}
     <input
       type="password"
       value={password}
@@ -53,24 +41,22 @@ function Signup() {
       className="border border-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
     />
 
-    {/* Submit Button */}
     <button
       type="submit"
-      className="bg-black text-white py-2 rounded-lg hover:bg-gray-900 transition cursor-pointer"
+      className="bg-black text-white py-2 rounded-lg hover:bg-gray-900 transition"
     >
       Submit
     </button>
     <p className="text-sm text-center text-gray-700">
-      Already have an account?{" "}
-      <span onClick={()=>{router.push('/signin')}} className="text-black font-semibold cursor-pointer hover:underline">
-        Signin
+      Don’t have an account?{" "}
+      <span onClick={()=>{router.push('/signup')}} className="text-black font-semibold cursor-pointer hover:underline">
+        Signup
       </span>
-    </p>     
+    </p>    
   </form>
 </div>
-
 
   )
 }
 
-export default Signup
+export default Signin

@@ -24,17 +24,24 @@ function page() {
   if(!token){
     router.push('/')
   }
+  console.log("1")
    const f=async()=>{
+     console.log("2")
     const res=await axios.get('http://localhost:3001/api/v1/room',{
       headers:{
         Authorization:`Bearer ${token}`
       }
     })
+     console.log("3")
+    console.log("1")
     const data= res.data;
-    console.log(data)
+    console.log("2")
     setRooms(data.rooms)
+    console.log("3")
     setUserId(data.userId)
+    console.log("4")
     setLoading(false)
+    console.log("5")
    }
    f()
  },[render])
