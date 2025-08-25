@@ -15,7 +15,7 @@ declare global {
 }
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
-  console.log("middleware 1")
+
   const authHeader = req.headers["authorization"] || "";
   if (!authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
@@ -24,7 +24,6 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
 
   try {
     const decoded = jwt.verify(token, JWT_secret) as MyJwtPayload;
-    console.log(decoded)
     if (!decoded?.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }

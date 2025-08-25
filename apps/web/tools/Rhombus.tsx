@@ -10,7 +10,7 @@ function Rhombus({onClick,selected}:ToolProps) {
         <rect x="16" y="16" width="32" height="32"
                 rx="4" ry="4"
                 transform="rotate(45 32 32)"
-                fill="none" stroke="currentColor" stroke-width="3"/>
+                fill="none" stroke="currentColor" strokeWidth="3"/>
         </svg>
 
     </div>
