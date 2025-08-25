@@ -17,7 +17,7 @@ import Bin from "../../tools/Bin";
 import Loader from "../../../components/Loader";
 import { RenderShapes } from "../../../lib/renderShapes";
 import { Shape } from "../../types/Shape";
-
+import Hand from "../../tools/Hand";
 export default function Canvas() {
 
   const canvasRef= useRef<HTMLCanvasElement>(null);
@@ -25,6 +25,7 @@ export default function Canvas() {
   const [selected,setSelected]=useState('circle')
   const [loading,setLoading]=useState(true);
   const panOffSetref= useRef({x:0,y:0});
+  const zommOffSetref= useRef(1)
   const router= useRouter();
 
   const params = useParams();
@@ -460,14 +461,14 @@ export default function Canvas() {
            <Square icon={<Users flag={true}/>}/>
          </div>
          
-         <div className="absolute top-4 left-162 flex  bg-[#27272A] gap-3 px-3 py-1 rounded-lg">
+         <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-3 py-1 rounded-lg">
+            <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
             <Rhombus onClick={()=>{setSelected("icon")}} selected={selected}/>
             <Circle onClick={()=>{setSelected("ellipse")}} selected={selected}/>
             <Line onClick={()=>{setSelected("line")}} selected={selected}/>
             <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
             <Bin onClick={handleClear} />
-            <div onClick={()=>{setSelected("handgrip")}}className={`${selected=="handgrip" ? "bg-purple-500":""}`}>H</div>
          </div>
          
     </div>
