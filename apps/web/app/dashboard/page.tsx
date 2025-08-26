@@ -8,7 +8,7 @@ import axios from 'axios'
 import Modal from '../../components/Modal'
 import { useRouter } from 'next/navigation'
 import Loader from '../../components/Loader'
-
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 
 function page() {
  const [rooms, setRooms]=useState([]);
@@ -25,7 +25,7 @@ function page() {
     router.push('/')
   }
    const f=async()=>{
-    const res=await axios.get('http://localhost:3001/api/v1/room',{
+    const res=await axios.get(`${BASE_URL}/room`,{
       headers:{
         Authorization:`Bearer ${token}`
       }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 interface ModalProps {
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
   type:"join" | "create"
@@ -22,14 +22,14 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   if (type === "create") {
     const res = await axios.post(
-      "http://localhost:3001/api/v1/room/createRoom",
+      `${BASE_URL}/room/createRoom`,
       { name },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (res.data.roomId) router.push(`/canvas/${res.data.roomId}`);
   } else {
     const res = await axios.post(
-      `http://localhost:3001/api/v1/room/${name}`,
+      `${BASE_URL}/room/${name}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -54,7 +54,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       value={name}
       onChange={(e)=>{setName(e.target.value)}}
       placeholder="Type here..."
-      className="mt-2 w-full rounded-md bg-[#1e293b] border border-gray-600 px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="mt-2 w-full rounded-md bg-[#1e293b] border border-gray-600 px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#48488E]"
     />
 
     

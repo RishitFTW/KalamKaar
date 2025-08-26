@@ -21,7 +21,7 @@ import Hand from "../../../tools/Hand";
 import { RenderShapes } from "../../../lib/renderShapes";
 import { handleCopy } from "../../../lib/CopyID";
 import Members from "../../../components/Members";
-
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 export default function Canvas() {
 
 const toWorldCoords = (x: number, y: number) => ({
@@ -61,12 +61,12 @@ const toScreenCoords = (x: number, y: number) => ({
     });
     const f=async()=>{
       const token= localStorage.getItem('authToken')
-      const res= await axios.get(`http://localhost:3001/api/v1/chat/${roomId}`,{
+      const res= await axios.get(`${BASE_URL}/chat/${roomId}`,{
         headers:{
             Authorization:`Bearer ${token}`
         }
       })
-      const members= await axios.get(`http://localhost:3001/api/v1/room/members/${roomId}`,{
+      const members= await axios.get(`${BASE_URL}/room/members/${roomId}`,{
         headers:{
             Authorization:`Bearer ${token}`
         }
@@ -531,7 +531,7 @@ useEffect(() => {
     try {
       const token=localStorage.getItem('authToken')
       const res = await axios.delete(
-        `http://localhost:3001/api/v1/chat/${roomId}`,
+        `${BASE_URL}/chat/${roomId}`,
         {
           headers: {
             Authorization:`Bearer ${token}`

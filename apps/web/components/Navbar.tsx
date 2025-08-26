@@ -2,7 +2,6 @@ import React from 'react'
 import Button from './Button'
 import Logo from '../app/icons/Logo'
 import Link from '../app/icons/Link'
-import { routerServerGlobal } from 'next/dist/server/lib/router-utils/router-server-context';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 interface ModalProps {

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Bin from '../app/icons/Bin'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 interface CardProps{
   id:number,
   name:string,
@@ -22,7 +23,7 @@ function Card({id,name,members,owner,userId,setRerender}:CardProps) {
 const handleDelete = async () => {
   try {
     const token=localStorage.getItem('authToken')
-    const res = await axios.delete(`http://localhost:3001/api/v1/room/${id}`,{
+    const res = await axios.delete(`${BASE_URL}/room/${id}`,{
       headers:{
         Authorization:`Bearer ${token}`
       }

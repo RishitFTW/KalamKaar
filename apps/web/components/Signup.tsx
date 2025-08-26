@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 function Signup() {
     const [email, setEmail]= useState("")
     const [password, setPassword]= useState("")
@@ -10,7 +10,7 @@ function Signup() {
     const router= useRouter();
     const handleSubmit=async(e:React.FormEvent)=>{
         e.preventDefault();
-        const res=await axios.post('http://localhost:3001/api/v1/auth/signup',
+        const res=await axios.post(`${BASE_URL}/auth/signup`,
               {email,password,name}
             )
         const data= res.data;
