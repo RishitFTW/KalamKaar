@@ -38,6 +38,7 @@ const toScreenCoords = (x: number, y: number) => ({
   const [selected,setSelected]=useState("")
   const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
+  const [hover, setHover] = useState<boolean | null>(null)
   const panOffSetref= useRef({x:0,y:0});
   const zoomRef= useRef(1)
   const router= useRouter();
@@ -70,8 +71,7 @@ const toScreenCoords = (x: number, y: number) => ({
             Authorization:`Bearer ${token}`
         }
       })
-      console.log(`Members-> ${members.data.members}`)
-      setMembers(members.data.members)
+      setMembers(members.data)
 
      shapesRef.current=res.data.data
      const canvas= canvasRef.current;
@@ -559,9 +559,13 @@ useEffect(() => {
            <Square icon={<Share/>} onClick={()=>{handleCopy(roomId)}}/>
          </div>
          <div className="absolute bottom-4 right-8">
-           <Square icon={<Users flag={true} />}/>
+           <Square icon={<Users flag={true} />} members={members} hover={hover} setHover={setHover}/>
          </div>
-         <Members/>
+      {hover && (
+        <div className="absolute top-148 right-12">
+          <Members members={members} />
+        </div>
+      )}                 
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>

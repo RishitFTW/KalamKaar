@@ -13,6 +13,9 @@ export async function createRoom(req:Request,res:Response){
     }
     
     const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }    
 
     try {
         const room = await prisma.room.create({
@@ -21,7 +24,12 @@ export async function createRoom(req:Request,res:Response){
                 adminId: Number(userId)
             }
         })
-
+      const member = await prisma.member.create({
+            data: {
+              userId: userId,
+              roomId: Number(room.id),
+            },
+          });        
         res.json({
             roomId: room.id
         })
@@ -104,22 +112,12 @@ export async function fetchMembers(req: Request, res: Response){
         id: parseInt(roomId, 10),
       },
       include: {
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            photo: true,
-          },
-        },
         members: {
           include: {
             user: {
               select: {
                 id: true,
                 name: true,
-                email: true,
-                photo: true,
               },
             },
           },
@@ -128,10 +126,19 @@ export async function fetchMembers(req: Request, res: Response){
     });
 
     if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    const members = room.members.map((m) => ({
+      id: m.user.id,
+      username: m.user.name,
+    }));
+
+    if (!members) {
       return res.status(404).json({ error: 'Room not found.' });
     }
-    console.log(room);
-    return res.status(200).json(room);
+
+    return res.status(200).json(members);
 
   } catch (error) {
     console.error('Failed to fetch room details:', error);

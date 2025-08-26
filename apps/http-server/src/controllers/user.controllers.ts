@@ -20,6 +20,7 @@ export async function createUser(req:Request,res:Response) {
                 password:result.data.password
         }
     })
+    
   const token = jwt.sign(
     {id: user.id },
     JWT_secret,
