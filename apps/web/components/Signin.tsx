@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
+import { toast } from 'react-toastify'
 
 function Signin() {
     const [email, setEmail]= useState("")
@@ -14,6 +15,7 @@ function Signin() {
             )
         const data= res.data;
         localStorage.setItem('authToken',data.token) 
+        toast.success('Logged in')
         router.push('/dashboard')
 
     }

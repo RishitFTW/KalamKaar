@@ -19,7 +19,7 @@ function Button({variant,text,icon,onClick}:ButtonProps) {
   return (
     <div>
        <button onClick={onClick}
-       className={`${variantClasses[variant]} font-bold text-md text-white hover:bg-gray-700 flex rounded-md`}>
+       className={`${variantClasses[variant]} font-bold text-md text-white hover:bg-gray-700 flex rounded-md cursor-pointer`}>
                         {icon}<span className='pl-1'>{text}</span></button>
     </div>
   )

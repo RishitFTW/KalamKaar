@@ -91,6 +91,53 @@ export async function deleteRoom(req: Request, res: Response) {
   }
 }
 
+export async function fetchMembers(req: Request, res: Response){
+  const { roomId } = req.params;
+
+  if (!roomId) {
+    return res.status(400).json({ error: 'Room ID is required.' });
+  }
+
+  try {
+    const room = await prisma.room.findUnique({
+      where: {
+        id: parseInt(roomId, 10),
+      },
+      include: {
+        admin: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photo: true,
+          },
+        },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                photo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found.' });
+    }
+    console.log(room);
+    return res.status(200).json(room);
+
+  } catch (error) {
+    console.error('Failed to fetch room details:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }   
+}
 
 export async function addMember(req: Request, res: Response) {
   const { roomId } = req.params;

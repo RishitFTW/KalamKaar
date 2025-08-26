@@ -67,7 +67,7 @@ function page() {
           )
         ))}
           <div onClick={()=>{setModal(true); setType("create")}} 
-           className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-[#703d90] hover:text-[#703d90] hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
+           className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-[#48488E] hover:text-[#48488E] hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
               <div className=''><Add/></div>
               <div className="font-medium">New Drawing</div>
           </div>         

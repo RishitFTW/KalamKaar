@@ -3,6 +3,7 @@ import Users from '../app/icons/Users'
 import { useRouter } from 'next/navigation'
 import Bin from '../app/icons/Bin'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 interface CardProps{
   id:number,
   name:string,
@@ -26,9 +27,8 @@ const handleDelete = async () => {
         Authorization:`Bearer ${token}`
       }
     });
-    console.log("s2");
-    console.log(res.data.message); 
     setRerender(prev=>prev+1)
+    toast.success('Room deleted successfully')    
   } catch (err) {
     console.error("Error deleting room");
   }

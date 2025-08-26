@@ -18,8 +18,9 @@ import Loader from "../../../components/Loader";
 
 import { Shape } from "../../../types/Shape";
 import Hand from "../../../tools/Hand";
-import { toScreenCoords, toWorldCoords } from "../../../lib/CoordFunc";
 import { RenderShapes } from "../../../lib/renderShapes";
+import { handleCopy } from "../../../lib/CopyID";
+import Members from "../../../components/Members";
 
 export default function Canvas() {
 
@@ -35,6 +36,7 @@ const toScreenCoords = (x: number, y: number) => ({
   const canvasRef= useRef<HTMLCanvasElement>(null);
   const shapesRef = useRef<Shape[]>([]);
   const [selected,setSelected]=useState("")
+  const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
   const panOffSetref= useRef({x:0,y:0});
   const zoomRef= useRef(1)
@@ -53,7 +55,6 @@ const toScreenCoords = (x: number, y: number) => ({
       router.push('/')
     }
     const socket=getSocket(Number(roomId))
-    console.log(roomId)
     socket.on("connect", () => {
       console.log("Connected to server:", socket.id);
     });
@@ -64,6 +65,14 @@ const toScreenCoords = (x: number, y: number) => ({
             Authorization:`Bearer ${token}`
         }
       })
+      const members= await axios.get(`http://localhost:3001/api/v1/room/members/${roomId}`,{
+        headers:{
+            Authorization:`Bearer ${token}`
+        }
+      })
+      console.log(`Members-> ${members.data.members}`)
+      setMembers(members.data.members)
+
      shapesRef.current=res.data.data
      const canvas= canvasRef.current;
     if (!canvas) return;
@@ -541,18 +550,18 @@ useEffect(() => {
   }
   return (
     <div className="w-screen h-screen bg-gray-300">
-         <canvas ref={canvasRef} className="h-full w-full bg-[#121212] relative">
+         <canvas ref={canvasRef} className="h-full w-full bg-[#18181B] relative">
          </canvas>
          <div className="absolute top-4 left-8">
            <Square icon={<Home/>} onClick={()=>{router.push('/dashboard')}}/>
          </div>
          <div className="absolute top-4 right-8">
-           <Square icon={<Share/>}/>
+           <Square icon={<Share/>} onClick={()=>{handleCopy(roomId)}}/>
          </div>
          <div className="absolute bottom-4 right-8">
-           <Square icon={<Users flag={true}/>}/>
+           <Square icon={<Users flag={true} />}/>
          </div>
-         
+         <Members/>
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
@@ -563,7 +572,6 @@ useEffect(() => {
              <div className="w-[1px] h-6 bg-zinc-600 mx-2 mt-1"></div>
             <Bin onClick={handleClear} />
          </div>
-         
     </div>
   );
 }
