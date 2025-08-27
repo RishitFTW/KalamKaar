@@ -8,7 +8,6 @@ export async function createUser(req:Request,res:Response) {
     const userData=req.body;
     const result=CreateUserSchema.safeParse(userData)
     if(!result.success){
-        console.log(result)
         res.json({
             message:"Incorrect inputs"
         })
@@ -23,8 +22,7 @@ export async function createUser(req:Request,res:Response) {
     
   const token = jwt.sign(
     {id: user.id },
-    JWT_secret,
-    { expiresIn: "5h" }
+    JWT_secret
   );
 
   return res.json({

@@ -562,7 +562,7 @@ useEffect(() => {
            <Square icon={<Users flag={true} />} members={members} hover={hover} setHover={setHover}/>
          </div>
       {hover && (
-        <div className="absolute top-148 right-12">
+        <div className="absolute bottom-18 right-8">
           <Members members={members} />
         </div>
       )}                 
