@@ -3,16 +3,21 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "exports":{
-    "./config":"./src/index.ts"
+  "type": "module",
+  "exports": {
+    "./config": "./src/index.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@repo/typescript-config":"workspace:*"
+    "@repo/typescript-config": "workspace:*"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@types/dotenv": "^8.2.3",
+    "dotenv": "^17.2.1"
+  }
 }
