@@ -33,9 +33,7 @@ export async function createUser(req:Request,res:Response) {
 
 
 export async function userSignin(req:Request,res:Response){
-    console.log("agya")
   const user = req.body;
-  console.log(user)
   const parsed = SignInSchema.safeParse(user);
   if (!parsed.success) {
     return res.status(400).json({
