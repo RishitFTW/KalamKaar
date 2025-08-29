@@ -1,6 +1,6 @@
 # 🎨 WanderInk
 
-WanderInk is an Excalidraw-inspired collaborative whiteboard app built with Next.js, Express.js, Socket.io, Turborepo, and TypeScript. It supports both solo and collaborative drawing, providing a seamless real-time canvas for users to create and share ideas together.
+WanderInk is a both solo and collaborative canvas app built with Next.js, Express.js, Socket.io, Turborepo, and TypeScript. It supports both solo and collaborative drawing, providing a seamless real-time canvas for users to create and share ideas together.
 
 
 ---
@@ -12,6 +12,7 @@ WanderInk is an Excalidraw-inspired collaborative whiteboard app built with Next
 - **⚡ Instant Sync** – Changes are updated across all participants in real time.
 - **📦 Scalable Architecture** – Powered by Turborepo for efficient monorepo management.
 - **🛠️ Modern Stack** – Built with Next.js frontend and Express.js backend for high performance.
+- **🧠 Undo/Redo** - Works in both solo and collaborative sessions
 - **👤 Solo Mode** – Use it individually for personal drawings and idea capture.
 
 
