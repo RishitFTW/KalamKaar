@@ -3,7 +3,10 @@ import { ToolProps } from "./types";
 import { getSocket } from "../../lib/socket";
 
 export const useEllipseTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,
@@ -45,6 +48,7 @@ export const useEllipseTool=(
             const ry = Math.abs(h) / 2;
 
             const newShape = {
+                id:user,
                 type: "ellipse",
                 x1: worldCenterX,
                 y1: worldCenterY,
@@ -53,12 +57,21 @@ export const useEllipseTool=(
             };
             
             shapesRef.current.push({
+                id:user,
                 type: "ellipse",
                 x1: worldCenterX,
                 y1: worldCenterY,
                 x2: rx,
                 y2: ry
             });
+            undoRef.current.push({
+                id:user,
+                type: "ellipse",
+                x1: worldCenterX,
+                y1: worldCenterY,
+                x2: rx,
+                y2: ry
+            })
             socket.emit('msg', newShape);
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
         };

@@ -8,10 +8,30 @@ export async function getChat(req:Request,res:Response){
             roomId:Number(roomId)
         }
     })
-    res.json({data:response})
+    res.json({data:response,user:req.userId})
 }
 
+export async function deleteChatbyId(req: Request, res: Response){
+  try {
+    const chatId= req.params
+    if(!chatId){
+      res.status(400).json({error:"Invalid chatId"})
+    }
+    const chat= await prisma.chat.delete({
+      where:{
+        id:Number(chatId)
+      }
+    })
 
+    return res.status(200).json({
+      message: "Chats deleted successfully",
+    });    
+
+  } catch (error) {
+    console.error("Error deleting chat:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
 
 export async function deleteChat(req: Request, res: Response) {
   try {

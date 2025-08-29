@@ -3,7 +3,10 @@ import { ToolProps } from "./types";
 import { getSocket } from "../../lib/socket";
 
 export const usePenTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,
@@ -39,12 +42,14 @@ export const usePenTool=(
             const worldPoints = currPoints.map(p => toWorldCoords(p.x, p.y));
             
             const newShape = { 
+                id:user,
                 type: "pen" as const, 
                 width: 2, 
                 points: worldPoints 
             };
 
             shapesRef.current.push(newShape);
+            undoRef.current.push(newShape);
             socket.emit('msg', newShape);
             currPoints = [];
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);

@@ -3,7 +3,10 @@ import { ToolProps } from "./types";
 import { getSocket } from "../../lib/socket";
 
 export const usePanTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,

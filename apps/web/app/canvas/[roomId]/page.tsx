@@ -41,6 +41,9 @@ const toScreenCoords = (x: number, y: number) => ({
 });
   const canvasRef= useRef<HTMLCanvasElement>(null);
   const shapesRef = useRef<Shape[]>([]);
+  const undoRef= useRef<Shape[]>([]) 
+  const redoRef= useRef<Shape[]>([]) 
+  const [user,setUser]= useState("")
   const [selected,setSelected]=useState("")
   const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
@@ -72,6 +75,7 @@ const toScreenCoords = (x: number, y: number) => ({
             Authorization:`Bearer ${token}`
         }
       })
+      console.log(res.data)
       const members= await axios.get(`${BASE_URL}/room/members/${roomId}`,{
         headers:{
             Authorization:`Bearer ${token}`
@@ -80,6 +84,7 @@ const toScreenCoords = (x: number, y: number) => ({
       setMembers(members.data)
 
      shapesRef.current=res.data.data
+     setUser(res.data.user)
      const canvas= canvasRef.current;
     if (!canvas) return;
 
@@ -94,29 +99,44 @@ const toScreenCoords = (x: number, y: number) => ({
     }
     f();
     setLoading(false)
-    socket.on('recieve',(messageData)=>{
-    shapesRef.current.push(messageData)
-     const canvas= canvasRef.current;
-    if (!canvas) return;
+    socket.on('recieve',(shapeData)=>{
+      console.group(shapeData)
+        shapesRef.current.push(shapeData)
+        const canvas= canvasRef.current;
+        if (!canvas) return;
 
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
-    const ctx= canvas.getContext('2d');
-    if (!ctx) return;
-    
-    ctx.strokeStyle="white";
-       
-    RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
+        canvas.width=window.innerWidth;
+        canvas.height=window.innerHeight;
+        const ctx= canvas.getContext('2d');
+        if (!ctx) return;
+        
+        ctx.strokeStyle="white";
+          
+        RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
+    })
+    socket.on('removeShape',(Shape)=>{
+        shapesRef.current.pop();
+        const canvas= canvasRef.current;
+        if (!canvas) return;
+
+        canvas.width=window.innerWidth;
+        canvas.height=window.innerHeight;
+        const ctx= canvas.getContext('2d');
+        if (!ctx) return;
+        
+        ctx.strokeStyle="white";
+          
+        RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef)       
     })
   },[])
 
 
- useRectangleTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
- useEllipseTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
- usePenTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
- usePanTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
- useRhombusTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
- useLineTool({ canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ useRectangleTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ useEllipseTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ usePenTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ usePanTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ useRhombusTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ useLineTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
 
  
   useEffect(() => {
@@ -158,7 +178,7 @@ const toScreenCoords = (x: number, y: number) => ({
     try {
       const token=localStorage.getItem('authToken')
       const res = await axios.delete(
-        `${BASE_URL}/chat/${roomId}`,
+        `${BASE_URL}/chat/delete/${roomId}`,
         {
           headers: {
             Authorization:`Bearer ${token}`
@@ -170,6 +190,33 @@ const toScreenCoords = (x: number, y: number) => ({
       console.error("Error deleting chat:", error);
     }    
   };
+  const handleUndo=async()=>{
+    const socket= getSocket(Number(roomId))
+    try {
+      if(undoRef.current.length==0){
+        return ;
+      }
+      const Shape=undoRef.current[undoRef.current.length-1]
+      redoRef.current.push(undoRef.current[undoRef.current.length-1]!)
+      undoRef.current.pop()
+      shapesRef.current.pop();
+      socket.emit('remove',Shape);
+      RenderShapes(shapesRef,panOffSetref,canvasRef,zoomRef)
+    } catch (error) {
+      console.error("Error undoing chat:", error);     
+    }
+  }
+
+  const handleRedo=async()=>{
+    try {
+      if(redoRef.current.length==0) return;
+      undoRef.current.push(redoRef.current[redoRef.current.length-1]!)
+      shapesRef.current.push(redoRef.current[redoRef.current.length-1]!)
+      RenderShapes(shapesRef,panOffSetref,canvasRef,zoomRef)      
+    } catch (error) {
+      console.error("Error redoing chat:", error); 
+    }
+  }
 
   if(loading){
     return <Loader/>
@@ -191,7 +238,9 @@ const toScreenCoords = (x: number, y: number) => ({
         <div className="absolute bottom-18 right-8">
           <Members members={members} />
         </div>
-      )}                 
+      )}
+        <div onClick={handleUndo} className="absolute bottom-9 left-50 text-white">undo</div>                 
+        <div className="absolute bottom-9 left-80 text-white">redo</div>                 
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>

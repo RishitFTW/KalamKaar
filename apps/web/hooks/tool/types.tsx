@@ -1,6 +1,8 @@
 import { Shape } from "../../types/Shape";
 
 export interface ToolProps {
+  user:string
+  undoRef: React.MutableRefObject<Shape[]>;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   shapesRef: React.MutableRefObject<Shape[]>;
   selected: string;

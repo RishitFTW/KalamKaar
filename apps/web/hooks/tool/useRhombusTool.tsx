@@ -4,7 +4,10 @@ import { drawRoundedDiamond } from "../../lib/DiamondShape";
 import { getSocket } from "../../lib/socket";
 
 export const useRhombusTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,
@@ -12,7 +15,7 @@ export const useRhombusTool=(
   panOffSetref,
   zoomRef,
   toWorldCoords
-}:ToolProps    
+}:ToolProps  
 )=>{
    useEffect(()=>{
 
@@ -46,6 +49,7 @@ export const useRhombusTool=(
             const worldHeight = Math.abs(h) / zoomRef.current;
 
             const newShape = {
+                id:user,
                 type: "icon" as const,
                 x1: world.x,
                 y1: world.y,
@@ -55,6 +59,7 @@ export const useRhombusTool=(
             };
             
             shapesRef.current.push(newShape);
+            undoRef.current.push(newShape);
             socket.emit('msg', newShape);
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
         };

@@ -3,7 +3,10 @@ import { ToolProps } from "./types";
 import { getSocket } from "../../lib/socket";
 
 export const useRectangleTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,
@@ -37,8 +40,9 @@ export const useRectangleTool=(
             const width = world.x - stX;
             const height = world.y - stY;
 
-            const newShape = { type: "rectangle", x1: stX, y1: stY, width, height };
-            shapesRef.current.push({ type: "rectangle", x1: stX, y1: stY, width, height });
+            const newShape = {id:user, type: "rectangle", x1: stX, y1: stY, width, height };
+            shapesRef.current.push({id:user, type: "rectangle", x1: stX, y1: stY, width, height });
+            undoRef.current.push({id:user, type: "rectangle", x1: stX, y1: stY, width, height });
             socket.emit('msg', newShape)
         };
         const handleMousemove = (e: MouseEvent) => {

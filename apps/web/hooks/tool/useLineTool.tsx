@@ -4,7 +4,10 @@ import { getSocket } from "../../lib/socket";
 
 
 export const useLineTool=(
-{  canvasRef,
+{  
+  user,
+  undoRef, 
+  canvasRef,
   shapesRef,
   selected,
   RenderShapes,
@@ -39,6 +42,7 @@ export const useLineTool=(
             const world2 = toWorldCoords(e.clientX, e.clientY);
 
             const newShape = {
+                id:user,
                 type: "line" as const, 
                 x1: world1.x,
                 y1: world1.y,
@@ -47,6 +51,7 @@ export const useLineTool=(
             };
             
             shapesRef.current.push(newShape);
+            undoRef.current.push(newShape);
             socket.emit('msg', newShape);
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
         };

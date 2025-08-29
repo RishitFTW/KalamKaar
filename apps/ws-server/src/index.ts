@@ -56,9 +56,9 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
        console.error("Authentication error: User ID not found on socket.");
       return; 
     }
-
+    let shapeData
     if(messageData.type=='rectangle'){
-       await prisma.chat.create({
+       shapeData= await prisma.chat.create({
         data:{
           type:messageData.type,
           x1:messageData.x1,
@@ -69,9 +69,10 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
           userId:socket.userId
         }
        })
+
     }
     else if(messageData.type=='pen'){
-       await prisma.chat.create({
+      shapeData= await prisma.chat.create({
         data:{
           type:messageData.type,
           points:messageData.points,
@@ -82,7 +83,7 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
        })      
     }
     else if(messageData.type=='icon'){
-       await prisma.chat.create({
+      shapeData= await prisma.chat.create({
         data:{
           type:messageData.type,
           x1:messageData.x1,
@@ -96,7 +97,7 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
        })       
     }
     else if(messageData.type=='ellipse'){
-       await prisma.chat.create({
+       shapeData=await prisma.chat.create({
         data:{
           type:messageData.type,
           x1:messageData.x1,
@@ -109,7 +110,7 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
        })      
     }
     else if(messageData.type=='line'){
-       await prisma.chat.create({
+      shapeData= await prisma.chat.create({
         data:{
           type:messageData.type,
           x1:messageData.x1,
@@ -122,5 +123,23 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
        })       
     }
     socket.broadcast.to(room).emit("recieve",messageData);
+  })
+  socket.on('remove',async(Shape)=>{
+    console.log("agya")
+    console.log(Shape)
+  const userId = Number(Shape.id);
+
+  const latestChat = await prisma.chat.findFirst({
+    where: { userId: userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+    if (!latestChat) {
+      return;
+    }    
+    await prisma.chat.delete({
+      where: { id: latestChat.id },
+    });    
+    socket.broadcast.to(room).emit("removeShape",Shape);
   })
 })
