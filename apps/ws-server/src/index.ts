@@ -125,8 +125,6 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
     socket.broadcast.to(room).emit("recieve",messageData);
   })
   socket.on('remove',async(Shape)=>{
-    console.log("agya")
-    console.log(Shape)
   const userId = Number(Shape.id);
 
   const latestChat = await prisma.chat.findFirst({

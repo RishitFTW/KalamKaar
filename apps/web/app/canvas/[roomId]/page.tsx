@@ -26,6 +26,7 @@ import { usePenTool } from "../../../hooks/tool/usePenTool";
 import { usePanTool } from "../../../hooks/tool/usePanTool";
 import { useRhombusTool } from "../../../hooks/tool/useRhombusTool";
 import { useLineTool } from "../../../hooks/tool/useLineTool";
+import { Socket } from "socket.io-client";
 const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 
 export default function Canvas() {
@@ -100,7 +101,7 @@ const toScreenCoords = (x: number, y: number) => ({
     f();
     setLoading(false)
     socket.on('recieve',(shapeData)=>{
-      console.group(shapeData)
+      
         shapesRef.current.push(shapeData)
         const canvas= canvasRef.current;
         if (!canvas) return;
@@ -111,11 +112,15 @@ const toScreenCoords = (x: number, y: number) => ({
         if (!ctx) return;
         
         ctx.strokeStyle="white";
-          
         RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
     })
     socket.on('removeShape',(Shape)=>{
-        shapesRef.current.pop();
+      for (let i = shapesRef.current.length - 1; i >= 0; i--) {
+        if (shapesRef.current[i]?.id === Shape.id) {
+          shapesRef.current.splice(i, 1);
+          break; 
+        }
+      }
         const canvas= canvasRef.current;
         if (!canvas) return;
 
@@ -199,7 +204,12 @@ const toScreenCoords = (x: number, y: number) => ({
       const Shape=undoRef.current[undoRef.current.length-1]
       redoRef.current.push(undoRef.current[undoRef.current.length-1]!)
       undoRef.current.pop()
-      shapesRef.current.pop();
+      for (let i = shapesRef.current.length - 1; i >= 0; i--) {
+        if (shapesRef.current[i]?.id === Shape?.id) {
+          shapesRef.current.splice(i, 1);
+          break; 
+        }
+      }
       socket.emit('remove',Shape);
       RenderShapes(shapesRef,panOffSetref,canvasRef,zoomRef)
     } catch (error) {
@@ -208,10 +218,14 @@ const toScreenCoords = (x: number, y: number) => ({
   }
 
   const handleRedo=async()=>{
+    const socket= getSocket(Number(roomId))
     try {
       if(redoRef.current.length==0) return;
+      const messageData=redoRef.current[redoRef.current.length-1]
       undoRef.current.push(redoRef.current[redoRef.current.length-1]!)
       shapesRef.current.push(redoRef.current[redoRef.current.length-1]!)
+      redoRef.current.pop();
+      socket.emit("msg",messageData)
       RenderShapes(shapesRef,panOffSetref,canvasRef,zoomRef)      
     } catch (error) {
       console.error("Error redoing chat:", error); 
@@ -240,7 +254,7 @@ const toScreenCoords = (x: number, y: number) => ({
         </div>
       )}
         <div onClick={handleUndo} className="absolute bottom-9 left-50 text-white">undo</div>                 
-        <div className="absolute bottom-9 left-80 text-white">redo</div>                 
+        <div onClick={handleRedo} className="absolute bottom-9 left-80 text-white">redo</div>                 
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
