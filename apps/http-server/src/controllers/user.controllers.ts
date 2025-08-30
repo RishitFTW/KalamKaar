@@ -56,8 +56,7 @@ export async function userSignin(req:Request,res:Response){
 
   const token = jwt.sign(
     { id: userData.id },
-    JWT_secret,
-    { expiresIn: "5h" }
+    JWT_secret
   );
 
   return res.json({

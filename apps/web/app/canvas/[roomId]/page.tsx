@@ -27,6 +27,8 @@ import { usePanTool } from "../../../hooks/tool/usePanTool";
 import { useRhombusTool } from "../../../hooks/tool/useRhombusTool";
 import { useLineTool } from "../../../hooks/tool/useLineTool";
 import { Socket } from "socket.io-client";
+import Undo from "../../icons/Undo";
+import Redo from "../../icons/Redo";
 const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 
 export default function Canvas() {
@@ -253,8 +255,12 @@ const toScreenCoords = (x: number, y: number) => ({
           <Members members={members} />
         </div>
       )}
-        <div onClick={handleUndo} className="absolute bottom-9 left-50 text-white">undo</div>                 
-        <div onClick={handleRedo} className="absolute bottom-9 left-80 text-white">redo</div>                 
+        <div className="absolute bottom-4 left-10 text-white">
+           <Square icon={<Undo/>} onClick={handleUndo}/>
+          </div>                 
+        <div className="absolute bottom-4 left-20 text-white">
+           <Square icon={<Redo/>} onClick={handleRedo}/>
+          </div>                 
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
