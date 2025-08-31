@@ -51,7 +51,7 @@ function page() {
       <div className='pt-10'>
         <Welcome setModal={setModal} setType={setType}/>
       </div>
-      <h3 className="text-2xl font-bold mb-6 text-white">All Your Drawings</h3>   
+      <h3 className="text-xl font-bold mb-4 text-white">All Your Rooms</h3>   
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {rooms.map((room: any) => (
           userId !== null && (
@@ -69,7 +69,7 @@ function page() {
           <div onClick={()=>{setModal(true); setType("create")}} 
            className="flex flex-col justify-center items-center gap-2 rounded-xl border-2 border-dashed border-gray-800 text-gray-500 transition-all duration-200 hover:border-[#48488E] hover:text-[#48488E] hover:bg-gray-900/50 cursor-pointer min-h-[226px]">
               <div className=''><Add/></div>
-              <div className="font-medium">New Drawing</div>
+              <div className="font-medium">New Room</div>
           </div>         
       </div> 
       </div>

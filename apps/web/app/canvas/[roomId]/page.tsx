@@ -47,7 +47,7 @@ const toScreenCoords = (x: number, y: number) => ({
   const undoRef= useRef<Shape[]>([]) 
   const redoRef= useRef<Shape[]>([]) 
   const [user,setUser]= useState("")
-  const [selected,setSelected]=useState("")
+  const [selected,setSelected]=useState("rectangle")
   const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
   const [hover, setHover] = useState<boolean | null>(null)
@@ -239,7 +239,10 @@ const toScreenCoords = (x: number, y: number) => ({
   }
   return (
     <div className="w-screen h-screen bg-gray-300">
-         <canvas ref={canvasRef} className="h-full w-full bg-[#18181B] relative">
+         <canvas ref={canvasRef} className={`h-full w-full bg-[#18181B] relative `}
+           style={{
+    cursor: `url(${selected == "handgrip" ? "/whole-hand-16.png" : "/cursor.svg"}), pointer`
+  }}>
          </canvas>
          <div className="absolute top-4 left-8">
            <Square icon={<Home/>} onClick={()=>{router.push('/dashboard')}}/>
