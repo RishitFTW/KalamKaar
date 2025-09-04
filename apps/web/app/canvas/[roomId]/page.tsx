@@ -47,7 +47,7 @@ const toScreenCoords = (x: number, y: number) => ({
   const undoRef= useRef<Shape[]>([]) 
   const redoRef= useRef<Shape[]>([]) 
   const [user,setUser]= useState("")
-  const [selected,setSelected]=useState("rectangle")
+  const [selected,setSelected]=useState("")
   const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
   const [hover, setHover] = useState<boolean | null>(null)
