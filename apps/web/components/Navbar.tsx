@@ -22,7 +22,7 @@ function Navbar({setModal,setType}:ModalProps) {
         <div className='pl-7 pt-1 flex-1'>
             <div className='flex items-center '>
             <Logo/>
-            <div className='flex justify-center items-center font-bold text-2xl pl-3 text-white'>WanderInk</div>
+            <div className='flex justify-center items-center font-bold text-2xl pl-3 text-white'>KalamKaar</div>
             </div>
 
         </div>
