@@ -1,6 +1,6 @@
-# 🎨 WanderInk
+# 🎨 KalamKaar
 
-WanderInk is a both solo and collaborative canvas app built with Next.js, Express.js, Socket.io, Turborepo, and TypeScript. It supports both solo and collaborative drawing, providing a seamless real-time canvas for users to create and share ideas together.
+KalamKaar is a both solo and collaborative canvas app built with Next.js, Express.js, Socket.io, Turborepo, and TypeScript. It supports both solo and collaborative drawing, providing a seamless real-time canvas for users to create and share ideas together.
 
 
 ---
@@ -37,7 +37,7 @@ WanderInk is a both solo and collaborative canvas app built with Next.js, Expres
 # 📂 Folder Structure
 ```
 
-WanderInk/
+KalamKaar/
 ├── apps/
 │   ├── http-server/  # Backend(Express.js)
 │   └── web/          # Frontend(Next.js)
