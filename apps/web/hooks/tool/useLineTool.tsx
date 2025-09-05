@@ -41,14 +41,6 @@ export const useLineTool = (
         const world1 = toWorldCoords(startX, startY);
         const world2 = toWorldCoords(e.clientX, e.clientY);
 
-        const newShape = {
-          id: user,
-          type: "arrow" as const,
-          x1: world1.x,
-          y1: world1.y,
-          x2: world2.x,
-          y2: world2.y,
-        };
 
         shapesRef.current.push({
           id: user,
@@ -66,7 +58,14 @@ export const useLineTool = (
           x2: world2.x,
           y2: world2.y,
         });
-        socket.emit("msg", newShape);
+        socket.emit("msg", {
+          id: user,
+          type: "line" as const,
+          x1: world1.x,
+          y1: world1.y,
+          x2: world2.x,
+          y2: world2.y,
+        });
         RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
       };
 
