@@ -240,9 +240,11 @@ const toScreenCoords = (x: number, y: number) => ({
   return (
     <div className="w-screen h-screen bg-gray-300">
          <canvas ref={canvasRef} className={`h-full w-full bg-[#18181B] relative `}
-           style={{
-    cursor: `url(${selected == "handgrip" ? "/whole-hand-16.png" : "/cursor.svg"}), pointer`
-  }}>
+          style={{
+          cursor: selected === "handgrip"
+            ? "url('/whole-hand-16.png') 8 8, pointer"   
+            : "url('/cursor.svg') 12 12, pointer"     
+        }}>
          </canvas>
          <div className="absolute top-4 left-8">
            <Square icon={<Home/>} onClick={()=>{router.push('/dashboard')}}/>

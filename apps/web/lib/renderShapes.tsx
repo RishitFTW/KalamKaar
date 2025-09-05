@@ -26,10 +26,26 @@ export function RenderShapes(
           ctx.stroke();
         }
         else if(shape.type=='line'){
-          ctx.beginPath(); 
-          ctx.moveTo(shape.x1, shape.y1); 
-          ctx.lineTo(shape.x2, shape.y2); 
-          ctx.stroke();        
+          ctx.beginPath();
+          ctx.moveTo(shape.x1, shape.y1);
+          ctx.lineTo(shape.x2, shape.y2);
+          ctx.stroke();
+
+          const headlen = 10; 
+          const angle = Math.atan2(shape.y2 - shape.y1, shape.x2 - shape.x1);
+
+          ctx.beginPath();
+          ctx.moveTo(shape.x2, shape.y2);
+          ctx.lineTo(
+            shape.x2 - headlen * Math.cos(angle - Math.PI / 6),
+            shape.y2 - headlen * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.moveTo(shape.x2, shape.y2);
+          ctx.lineTo(
+            shape.x2 - headlen * Math.cos(angle + Math.PI / 6),
+            shape.y2 - headlen * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.stroke();       
         }
         else if(shape.type=='icon'){
           drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
