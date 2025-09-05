@@ -29,6 +29,7 @@ import { useLineTool } from "../../../hooks/tool/useLineTool";
 import { Socket } from "socket.io-client";
 import Undo from "../../icons/Undo";
 import Redo from "../../icons/Redo";
+import { useTextTool } from "../../../hooks/tool/useTextTool";
 const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 
 export default function Canvas() {
@@ -144,6 +145,7 @@ const toScreenCoords = (x: number, y: number) => ({
  usePanTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
  useRhombusTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
  useLineTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
+ useTextTool({user,undoRef, canvasRef, shapesRef, selected, RenderShapes, roomId, panOffSetref, zoomRef, toWorldCoords })
 
  
   useEffect(() => {
@@ -267,6 +269,7 @@ const toScreenCoords = (x: number, y: number) => ({
            <Square icon={<Redo/>} onClick={handleRedo}/>
           </div>                 
          <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
+            <div onClick={()=>{setSelected("Text")}} className={`text-slate-300 flex justify-center items-center text-xl opacity-95 text-[23px] px-1 rounded ${selected=="Text" ? "bg-[#48488E]":""}`}>T</div>
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
             <Rhombus onClick={()=>{setSelected("icon")}} selected={selected}/>

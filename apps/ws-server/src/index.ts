@@ -11,7 +11,7 @@ interface AuthenticatedSocket extends Socket {
 
 const io= new Server(4000,{
   cors:{
-    origin:"https://wander-ink-web.vercel.app"
+    origin:"https://kalam-kaar-web.vercel.app"
   }
 })
 
@@ -121,6 +121,18 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
           userId:socket.userId
         }
        })       
+    }
+    else if(messageData.type=='Text'){
+      shapeData= await prisma.chat.create({
+        data:{
+          type:messageData.type,
+          x1:messageData.x1,
+          y1:messageData.y1,
+          points:messageData.points,
+          roomId:Number(room),
+          userId:socket.userId
+        }
+       })      
     }
     socket.broadcast.to(room).emit("recieve",messageData);
   })

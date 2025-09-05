@@ -68,6 +68,12 @@ export function RenderShapes(
           }
           ctx.stroke();
         }
+        else if(shape.type=="Text"){
+            ctx.font = "20px sans-serif";
+            ctx.fillStyle = "white";
+            ctx.textBaseline = "top";
+            ctx.fillText(shape.points.text, shape.x1, shape.y1);
+        }
       }
       ctx.restore();    
 }
