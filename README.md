@@ -3,8 +3,8 @@
 KalamKaar is a both solo and collaborative canvas app built with Next.js, Express.js, Socket.io, Turborepo, and TypeScript. It supports both solo and collaborative drawing, providing a seamless real-time canvas for users to create and share ideas together.
 
 
+![Notify](https://github.com/user-attachments/assets/c4a8010b-7ac2-4f73-8cac-3fac3686c100)
 ---
-
 ## ✨ Features
 
 - **🖌️ Real-Time Canvas** – Draw, sketch, and brainstorm with an intuitive interface.
