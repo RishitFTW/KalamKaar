@@ -21,9 +21,16 @@ export function RenderShapes(
           ctx.strokeRect(shape.x1, shape.y1, shape.width, shape.height);
         }
         else if(shape.type=="ellipse"){
-          ctx.beginPath();
-          ctx.ellipse(shape.x1, shape.y1, shape.x2, shape.y2,0,0,2*Math.PI);
-          ctx.stroke();
+            const w = shape.x2 - shape.x1;
+            const h = shape.y2 - shape.y1;
+
+            const worldCenterX = shape.x1 + w / 2;
+            const worldCenterY = shape.y1 + h / 2;
+            const rx = Math.abs(w) / 2;
+            const ry = Math.abs(h) / 2;          
+            ctx.beginPath();
+            ctx.ellipse(worldCenterX, worldCenterY, rx, ry,0,0,2*Math.PI);
+            ctx.stroke();
         }
         else if(shape.type=='line'){
           ctx.beginPath();

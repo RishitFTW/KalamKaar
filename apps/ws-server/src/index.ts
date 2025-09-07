@@ -11,7 +11,7 @@ interface AuthenticatedSocket extends Socket {
 
 const io= new Server(4000,{
   cors:{
-    origin:"https://kalam-kaar-web.vercel.app"
+    origin:["https://kalam-kaar-web.vercel.app","http://localhost:3000"]
   }
 })
 

@@ -39,38 +39,31 @@ export const useEllipseTool=(
             clicked = false;
             
             const world = toWorldCoords(e.clientX, e.clientY);
-            const w = world.x - stX;
-            const h = world.y - stY;
-
-            const worldCenterX = stX + w / 2;
-            const worldCenterY = stY + h / 2;
-            const rx = Math.abs(w) / 2;
-            const ry = Math.abs(h) / 2;
 
             const newShape = {
                 id:user,
                 type: "ellipse",
-                x1: worldCenterX,
-                y1: worldCenterY,
-                x2: rx,
-                y2: ry
+                x1: stX,
+                y1: stY,
+                x2: world.x,
+                y2: world.y
             };
             
             shapesRef.current.push({
                 id:user,
                 type: "ellipse",
-                x1: worldCenterX,
-                y1: worldCenterY,
-                x2: rx,
-                y2: ry
+                x1: stX,
+                y1: stY,
+                x2: world.x,
+                y2: world.y
             });
             undoRef.current.push({
                 id:user,
                 type: "ellipse",
-                x1: worldCenterX,
-                y1: worldCenterY,
-                x2: rx,
-                y2: ry
+                x1: stX,
+                y1: stY,
+                x2: world.x,
+                y2: world.y
             })
             socket.emit('msg', newShape);
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
