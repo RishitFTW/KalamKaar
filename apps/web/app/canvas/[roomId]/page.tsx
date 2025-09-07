@@ -49,6 +49,8 @@ const toScreenCoords = (x: number, y: number) => ({
   const undoRef= useRef<Shape[]>([]) 
   const redoRef= useRef<Shape[]>([]) 
   const [user,setUser]= useState("")
+  const userRef = useRef(null);
+
   const [selected,setSelected]=useState("")
   const [members, setMembers]=useState([])
   const [loading,setLoading]=useState(true);
@@ -62,7 +64,9 @@ const toScreenCoords = (x: number, y: number) => ({
     if (!roomId) {
     return;
   }
-
+  useEffect(() => {
+  userRef.current = user;
+}, [user]);
 
   useEffect(()=>{
     const token=localStorage.getItem('authToken');
@@ -80,7 +84,6 @@ const toScreenCoords = (x: number, y: number) => ({
             Authorization:`Bearer ${token}`
         }
       })
-      console.log(res.data)
       const members= await axios.get(`${BASE_URL}/room/members/${roomId}`,{
         headers:{
             Authorization:`Bearer ${token}`
@@ -89,6 +92,7 @@ const toScreenCoords = (x: number, y: number) => ({
       setMembers(members.data)
 
      shapesRef.current=res.data.data
+     console.log(res.data.user)
      setUser(res.data.user)
      const canvas= canvasRef.current;
     if (!canvas) return;
@@ -105,7 +109,11 @@ const toScreenCoords = (x: number, y: number) => ({
     f();
     setLoading(false)
     socket.on('recieve',(shapeData)=>{
-      
+        if(shapeData.userId==userRef.current){
+          shapesRef.current.pop()
+          undoRef.current.pop()
+          undoRef.current.push(shapeData);
+        }
         shapesRef.current.push(shapeData)
         const canvas= canvasRef.current;
         if (!canvas) return;
@@ -119,6 +127,7 @@ const toScreenCoords = (x: number, y: number) => ({
         RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
     })
     socket.on('removeShape',(Shape)=>{
+      console.log("check")
       for (let i = shapesRef.current.length - 1; i >= 0; i--) {
         if (shapesRef.current[i]?.id === Shape.id) {
           shapesRef.current.splice(i, 1);
@@ -204,14 +213,17 @@ const toScreenCoords = (x: number, y: number) => ({
   const handleUndo=async()=>{
     const socket= getSocket(Number(roomId))
     try {
+      console.log(undoRef.current.length)
       if(undoRef.current.length==0){
         return ;
       }
       const Shape=undoRef.current[undoRef.current.length-1]
+      console.log(Shape)
       redoRef.current.push(undoRef.current[undoRef.current.length-1]!)
       undoRef.current.pop()
       for (let i = shapesRef.current.length - 1; i >= 0; i--) {
         if (shapesRef.current[i]?.id === Shape?.id) {
+          console.log(shapesRef.current[i])
           shapesRef.current.splice(i, 1);
           break; 
         }

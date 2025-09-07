@@ -136,21 +136,13 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
         }
        })      
     }
-    socket.broadcast.to(room).emit("recieve",messageData);
+    io.to(room).emit("recieve",shapeData);
   })
   socket.on('remove',async(Shape)=>{
-  const userId = Number(Shape.id);
-
-  const latestChat = await prisma.chat.findFirst({
-    where: { userId: userId },
-    orderBy: { createdAt: "desc" },
-  });
-
-    if (!latestChat) {
-      return;
-    }    
+  const shapeId = Number(Shape.id);
+   console.log("aya to shi")
     await prisma.chat.delete({
-      where: { id: latestChat.id },
+      where: { id: shapeId },
     });    
     socket.broadcast.to(room).emit("removeShape",Shape);
   })
