@@ -14,6 +14,8 @@ KalamKaar is a both solo and collaborative canvas app built with Next.js, Expres
 - **🛠️ Modern Stack** – Built with Next.js frontend and Express.js backend for high performance.
 - **🧠 Undo/Redo** - Works in both solo and collaborative sessions
 - **👤 Solo Mode** – Use it individually for personal drawings and idea capture.
+- **🖼️ Panning & Zooming** – Navigate large canvases smoothly with intuitive pan and zoom controls.
+- **🎯 Real-Time Shape Dragging** – Move and reposition shapes instantly with live synchronization across all users.
 
 
 ---

@@ -2,7 +2,8 @@ import { useEffect } from "react"
 import { ToolProps } from "./types"
 import { getSocket } from "../../lib/socket";
 import { start } from "repl";
-
+import axios from "axios";
+const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 export const useDragTool=(
 {  
   user,
@@ -29,9 +30,7 @@ export const useDragTool=(
       let currShape=null;
       let stX,stY,dragging=false;
 
-      const handleSelect=(e:MouseEvent)=>{
-        const x= e.clientX;
-        const y=e.clientY;
+      const findShape=(x:number,y:number)=>{
         const world=toWorldCoords(x,y);
         currShape = null;
         for(let i=0; i<shapesRef.current.length; i++){
@@ -106,17 +105,45 @@ export const useDragTool=(
       }
 
       const handleMouseDown=(e:MouseEvent)=>{
+        const x=e.clientX;
+        const y=e.clientY;
+        findShape(x,y);
           if(!currShape) return;
           dragging=true;
           stX=e.clientX;
           stY=e.clientY;
       }
 
-      const handleMouseUp=(e:MouseEvent)=>{
-        dragging=false;
+      const handleMouseUp = async (e: MouseEvent) => {
+        dragging = false;
+        console.log("click")
         RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
-      }
-      
+
+        try {
+          const token = localStorage.getItem("authToken");
+
+          if (!token) {
+            console.error("No auth token found");
+            return;
+          }
+
+          await axios.put(
+            `${BASE_URL}/chat/update`,
+            currShape,  
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          console.log("Shape updated successfully");
+        } catch (error) {
+          console.error("Error updating shape:", error);
+        }
+      };
+
+
       const handleMouseMove=(e:MouseEvent)=>{
         if(dragging){
 
@@ -192,18 +219,17 @@ export const useDragTool=(
           }
           RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);      
           }
-
+          socket.emit('drag',(currShape));
         }
         
       }
 
 
-      canvas.addEventListener('mousedown',handleMouseDown)
-      canvas.addEventListener('mouseup',handleMouseUp)
-      canvas.addEventListener('mousemove',handleMouseMove);
-      canvas.addEventListener('click',handleSelect)
+      canvas.addEventListener("mousedown", handleMouseDown);
+      canvas.addEventListener("mouseup", handleMouseUp);
+      canvas.addEventListener("mousemove", handleMouseMove);
+
       return ()=>{
-        canvas.removeEventListener('click',handleSelect)
         canvas.removeEventListener('mousedown',handleMouseDown)
         canvas.removeEventListener('mouseup',handleMouseUp)
         canvas.removeEventListener('mousemove',handleMouseMove);        

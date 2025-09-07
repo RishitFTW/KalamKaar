@@ -58,7 +58,7 @@ export function RenderShapes(
           drawRoundedDiamond(ctx, shape.x1, shape.y1, shape.width, shape.height, shape.radius);
         }
         else if(shape.type=='pen'){
-          ctx.lineWidth=2;
+          ctx.lineWidth=1;
           ctx.lineCap='round';
           ctx.beginPath();
           if(shape.points.length>1){

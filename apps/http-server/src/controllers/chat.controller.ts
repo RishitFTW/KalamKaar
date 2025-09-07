@@ -11,6 +11,23 @@ export async function getChat(req:Request,res:Response){
     res.json({data:response,user:req.userId})
 }
 
+
+export async function updateChat(req:Request,res:Response){
+  try {
+    const shapeData=req.body;
+    const { id, ...updates } = shapeData;
+    await prisma.chat.update({
+      where:{ id: id},
+      data:updates
+    })
+    res.status(200).json({message:"updated success"})
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });    
+  }
+}
+
+
 export async function deleteChatbyId(req: Request, res: Response){
   try {
     const chatId= req.params

@@ -146,4 +146,7 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
     });    
     socket.broadcast.to(room).emit("removeShape",Shape);
   })
+  socket.on('drag',async(currShape)=>{
+    socket.broadcast.to(room).emit("dragShape",currShape)
+  })
 })

@@ -31,6 +31,7 @@ import Undo from "../../icons/Undo";
 import Redo from "../../icons/Redo";
 import { useTextTool } from "../../../hooks/tool/useTextTool";
 import { useDragTool } from "../../../hooks/tool/useDragTool";
+import HandGrip from "../../icons/hand-grip";
 const BASE_URL=process.env.NEXT_PUBLIC_API_URL
 
 export default function Canvas() {
@@ -125,6 +126,14 @@ const toScreenCoords = (x: number, y: number) => ({
         
         ctx.strokeStyle="white";
         RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef) 
+    })
+    socket.on('dragShape',(currShape)=>{
+        for(let i=0; i<shapesRef.current.length; i++){
+          if(shapesRef.current[i].id==currShape.id){
+            shapesRef.current[i]=currShape
+          }
+        }
+        RenderShapes(shapesRef,panOffSetref,canvasRef, zoomRef)      
     })
     socket.on('removeShape',(Shape)=>{
       console.log("check")
@@ -282,15 +291,15 @@ const toScreenCoords = (x: number, y: number) => ({
         <div className="absolute bottom-4 left-20 text-white">
            <Square icon={<Redo/>} onClick={handleRedo}/>
           </div>                 
-         <div className="absolute top-4 left-150 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
-            <div onClick={()=>{setSelected("drag")}} className={`${selected=="drag" ? "bg-[#48488E]":""}`} >Drag</div>
-            <div onClick={()=>{setSelected("Text")}} className={`text-slate-300 flex justify-center items-center text-xl opacity-95 text-[23px] px-1 rounded ${selected=="Text" ? "bg-[#48488E]":""}`}>T</div>
+         <div className="absolute top-4 left-138 flex  bg-[#27272A] gap-3 px-4 py-2 rounded-lg">
             <Hand onClick={()=>{setSelected("handgrip")}} selected={selected}/>            
             <RectTool onClick={()=>{setSelected("rectangle")}} selected={selected}/>
             <Rhombus onClick={()=>{setSelected("icon")}} selected={selected}/>
             <Circle onClick={()=>{setSelected("ellipse")}} selected={selected}/>
             <Line onClick={()=>{setSelected("line")}} selected={selected}/>
             <Pencil onClick={()=>{setSelected("pen")}} selected={selected}/>
+            <div onClick={()=>{setSelected("Text")}} className={`text-slate-300 flex justify-center items-center opacity-95 text-[22px] px-1 rounded ${selected=="Text" ? "bg-[#48488E]":""}`}>T</div>  
+            <HandGrip onClick={()=>{setSelected("drag")}} selected={selected}/>            
              <div className="w-[1px] h-6 bg-zinc-600 mx-2 mt-1"></div>
             <Bin onClick={handleClear} />
          </div>
