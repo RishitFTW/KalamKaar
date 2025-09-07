@@ -128,6 +128,8 @@ io.on("connection",(socket: AuthenticatedSocket)=>{
           type:messageData.type,
           x1:messageData.x1,
           y1:messageData.y1,
+          x2:messageData.x2,
+          y2:messageData.y2,
           points:messageData.points,
           roomId:Number(room),
           userId:socket.userId

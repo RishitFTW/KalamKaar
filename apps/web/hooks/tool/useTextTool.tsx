@@ -65,52 +65,59 @@ export const useTextTool=(
         const handleOutClick=(e:MouseEvent)=>{
           
           if (e.target !== area) {
-                if (area && area.value.trim() !== "") {
-                const world = toWorldCoords(stX, stY);
+            if (area && area.value.trim() !== "") {
+              const world = toWorldCoords(stX, stY);
 
-                const span = document.createElement("span");
-                span.style.font = area.style.font;
-                span.style.visibility = "hidden";
-                span.style.whiteSpace = "pre";
-                span.textContent = area.value || " ";
-                document.body.appendChild(span);
+              // Create hidden span to measure text size
+              const span = document.createElement("span");
+              span.style.font = area.style.font;
+              span.style.visibility = "hidden";
+              span.style.whiteSpace = "pre";
+              span.textContent = area.value || " ";
+              document.body.appendChild(span);
 
-                const textWidth = span.offsetWidth;
-                const textHeight = span.offsetHeight;
+              const textWidth = span.offsetWidth;
+              const textHeight = span.offsetHeight;
 
-                document.body.removeChild(span);
+              document.body.removeChild(span);
 
-                const endScreen = { x: stX + textWidth, y: stY + textHeight };
-                const worldEnd = toWorldCoords(endScreen.x, endScreen.y);
-                shapesRef.current.push({
-                    id: user,
-                    type: "Text",
-                    x1: world.x,
-                    y1: world.y,
-                    x2:worldEnd.x,
-                    y2:worldEnd.y,
-                    points: {text:area.value}
-                });
-                undoRef.current.push({
-                    id: user,
-                    type: "Text",
-                    x1: world.x,
-                    y1: world.y,
-                    x2:worldEnd.x,
-                    y2:worldEnd.y,
-                    points: {text:area.value}
-                });
-                socket.emit("msg", {
-                    id: user,
-                    type: "Text",
-                    x1: world.x,
-                    y1: world.y,
-                    x2:worldEnd.x,
-                    y2:worldEnd.y,
-                    points: {text:area.value}
-                });              
-                RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
-                }
+              // Convert bottom-right corner into world coords
+              const endScreen = { x: stX + textWidth, y: stY + textHeight };
+              const worldEnd = toWorldCoords(endScreen.x, endScreen.y);
+
+              const textShape = {
+                id: user,
+                type: "Text",
+                x1: world.x,
+                y1: world.y,
+                x2: worldEnd.x,
+                y2: worldEnd.y,
+                points: { text: area.value }
+              };
+
+              shapesRef.current.push({
+                id: user,
+                type: "Text",
+                x1: world.x,
+                y1: world.y,
+                x2: worldEnd.x,
+                y2: worldEnd.y,
+                points: { text: area.value }
+              });
+              undoRef.current.push({
+                id: user,
+                type: "Text",
+                x1: world.x,
+                y1: world.y,
+                x2: worldEnd.x,
+                y2: worldEnd.y,
+                points: { text: area.value }
+              });
+              socket.emit("msg", textShape);
+              console.log(`bnane par ${textShape.x1} ${textShape.y1} END=> ${textShape.x2} ${textShape.y2}`)
+              RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+            }
+
                 if (area) {
                     document.body.removeChild(area);
                     area = null;

@@ -28,6 +28,7 @@ export const useDragTool=(
 
       let currShape=null;
       let stX,stY,dragging=false;
+
       const handleSelect=(e:MouseEvent)=>{
         const x= e.clientX;
         const y=e.clientY;
@@ -54,8 +55,19 @@ export const useDragTool=(
                    currShape=shape;
               }             
           }
-          else if(shape.type=="icon"){
+          else if (shape.type == "icon") {
+            const halfW = shape.width / 2;
+            const halfH = shape.height / 2;
 
+            let left = shape.x1 - halfW;
+            let right = shape.x1 + halfW;
+            let top = shape.y1 - halfH;
+            let bottom = shape.y1 + halfH;
+
+            if (left <= world.x && world.x <= right &&
+                top <= world.y && world.y <= bottom) {
+              currShape = shape;
+            }
           }
           else if(shape.type=="Text"){
              let x=Math.min(shape.x1,shape.x2)
@@ -63,6 +75,7 @@ export const useDragTool=(
              let endx=Math.max(shape.x1,shape.x2)
              let endy=Math.max(shape.y1,shape.y2)
               if(x<=world.x && y<=world.y && world.x<= endx && world.y<=endy){
+                console.log(`drag par ${world.x} ${world.y}`)
                    currShape=shape;
               }  
           }
@@ -76,7 +89,17 @@ export const useDragTool=(
               } 
           }
           else if(shape.type=="pen"){
-
+            let points = shape.points;
+            const tolerance = 5;
+            for (let i = 0; i < points.length; i++) {
+              if (
+                Math.abs(points[i].x - world.x) <= tolerance &&
+                Math.abs(points[i].y - world.y) <= tolerance
+              ) {
+                currShape = shape;
+                break;
+              }
+            }
           }
         }
 
@@ -88,10 +111,12 @@ export const useDragTool=(
           stX=e.clientX;
           stY=e.clientY;
       }
+
       const handleMouseUp=(e:MouseEvent)=>{
         dragging=false;
         RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
       }
+      
       const handleMouseMove=(e:MouseEvent)=>{
         if(dragging){
 
@@ -141,6 +166,33 @@ export const useDragTool=(
           currShape.y2+=final.y;
           RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);    
           }
+          else if (currShape.type == "icon") {
+            let endX = e.clientX;
+            let endY = e.clientY;
+
+            let final = { x: endX - stX, y: endY - stY };
+            stX = endX;
+            stY = endY;
+
+            currShape.x1 += final.x;
+            currShape.y1 += final.y;
+
+            RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
+          }
+          else if(currShape.type=="pen"){
+          let endX=e.clientX
+          let endY=e.clientY;
+          let final={x:endX-stX,y:endY-stY};
+          stX=endX;
+          stY=endY;
+          let points=currShape.points
+          for(let i=0; i<points.length; i++){
+            points[i].x+=final.x;
+            points[i].y+=final.y
+          }
+          RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);      
+          }
+
         }
         
       }

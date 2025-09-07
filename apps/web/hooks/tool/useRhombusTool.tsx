@@ -47,7 +47,8 @@ export const useRhombusTool=(
             
             const worldWidth = Math.abs(w) / zoomRef.current;
             const worldHeight = Math.abs(h) / zoomRef.current;
-
+            const start=toWorldCoords(stX,stY);
+            const end=toWorldCoords(e.clientX,e.clientY)
             const newShape = {
                 id:user,
                 type: "icon" as const,
@@ -55,11 +56,27 @@ export const useRhombusTool=(
                 y1: world.y,
                 width: worldWidth,
                 height: worldHeight,
-                radius: 20
+                radius: 20,
             };
             
-            shapesRef.current.push(newShape);
-            undoRef.current.push(newShape);
+            shapesRef.current.push({
+                id:user,
+                type: "icon" as const,
+                x1: world.x,
+                y1: world.y,
+                width: worldWidth,
+                height: worldHeight,
+                radius: 20,
+            });
+            undoRef.current.push({
+                id:user,
+                type: "icon" as const,
+                x1: world.x,
+                y1: world.y,
+                width: worldWidth,
+                height: worldHeight,
+                radius: 20,
+            });
             socket.emit('msg', newShape);
             RenderShapes(shapesRef, panOffSetref, canvasRef, zoomRef);
         };

@@ -76,6 +76,7 @@ export function RenderShapes(
           ctx.stroke();
         }
         else if(shape.type=="Text"){
+          console.log(`render par ${shape.x1} ${shape.y1} END=> ${shape.x2} ${shape.y2}`)
             ctx.font = "20px sans-serif";
             ctx.fillStyle = "white";
             ctx.textBaseline = "top";
